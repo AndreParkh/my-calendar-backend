@@ -45,7 +45,7 @@ jobs:
 
       # Шаг 6: Публикация отчета о покрытии в GitHub Artifacts
       - name: Upload coverage report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: build/reports/jacoco/test/html/
