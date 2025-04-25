@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Шаг 1: Выполняем checkout кода
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Шаг 2: Настройка JDK
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '23'
+          distribution: 'temurin'
+
+      # Шаг 3: Кэширование зависимостей Gradle
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # Шаг 4: Сборка проекта с помощью Gradle
+      - name: Build project with Gradle
+        run: ./gradlew build --no-daemon
+
+      # Шаг 5: Запуск unit-тестов
+      - name: Run unit tests
+        run: ./gradlew test --no-daemon
+
+      # Шаг 6: Публикация отчета о покрытии в GitHub Artifacts
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: build/reports/jacoco/test/html/
