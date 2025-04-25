@@ -36,14 +36,18 @@ jobs:
             ${{ runner.os }}-gradle-
 
       # Шаг 4: Сборка проекта с помощью Gradle
-      #- name: Build project with Gradle
-      #  run: ./gradlew build --no-daemon
+      - name: Build project with Gradle
+        run: ./gradlew build --no-daemon
+
+      # 5. Сборка Docker-образа
+      - name: Build Docker image
+        run: docker build -t my-calendar-backend:latest .
 
       # Шаг 5: Запуск unit-тестов
       #- name: Run unit tests
       #  run: ./gradlew test --no-daemon
 
-      # Шаг 6: Публикация отчета о покрытии в GitHub Artifacts
+      # Шаг 7: Публикация отчета о покрытии в GitHub Artifacts
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
