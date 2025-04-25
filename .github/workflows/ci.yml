@@ -48,8 +48,8 @@ jobs:
         run: docker build -t my-calendar-backend:latest .
 
       # Шаг 7: Запуск unit-тестов
-      #- name: Run unit tests
-      #  run: ./gradlew test --no-daemon
+      - name: Run unit tests
+        run: ./gradlew test --no-daemon
 
       # Шаг 8: Публикация отчета о покрытии в GitHub Artifacts
       - name: Upload coverage report
