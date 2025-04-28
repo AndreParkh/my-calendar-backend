@@ -9,8 +9,9 @@ on:
       - master
 
 jobs:
+  # Job 1: Сборка проекта
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       # Шаг 1: Выполняем checkout кода
@@ -43,17 +44,97 @@ jobs:
       - name: Build project with Gradle
         run: ./gradlew build --no-daemon
 
-      # Шаг 6. Сборка Docker-образа
-      - name: Build Docker image
-        run: docker build -t my-calendar-backend:latest .
+  # Job 2: Запуск unit-тестов
+  test:
+    needs: build # Этот job выполняется после успешного завершения job "build"
+    runs-on: ubuntu-22.04
 
-      # Шаг 7: Запуск unit-тестов
+    steps:
+      # Шаг 1: Выполняем checkout кода
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Шаг 2: Настройка JDK
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '23'
+          distribution: 'temurin'
+
+      # Шаг 3: Запуск unit-тестов
       - name: Run unit tests
         run: ./gradlew test --no-daemon
 
-      # Шаг 8: Публикация отчета о покрытии в GitHub Artifacts
+      # Шаг 4: Публикация отчета о покрытии в GitHub Artifacts
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: build/reports/jacoco/test/html/
+
+  # Job 3: Создание Docker-образа
+  build-docker-image:
+    needs: test # Этот job выполняется после успешного завершения job "test"
+    runs-on: ubuntu-22.04
+
+    steps:
+      # Шаг 1: Выполняем checkout кода
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Шаг 2: Сборка Docker-образа
+      - name: Build Docker image
+        run: docker build -t my-calendar-backend:latest .
+
+  # Job 4: Публикация Docker-образа
+  publish-docker-image:
+    needs: build-docker-image # Этот job выполняется после успешного завершения job "build-docker-image"
+    runs-on: ubuntu-22.04
+
+    steps:
+      # Шаг 1: Логин в Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      # Шаг 2: Переименование образа
+      - name: Tag Docker image
+        run: docker tag my-calendar-backend:latest ${{ secrets.DOCKER_HUB_USERNAME }}/my-calendar-backend:latest
+
+      # Шаг 3: Публикация Docker-образа
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/my-calendar-backend:latest
+
+  # Job 5: Вызов события deploy и ожидание статуса
+  trigger-deploy:
+    needs: publish-docker-image
+    runs-on: ubuntu-22.04
+
+    steps:
+      # Шаг 1: Отправка события deploy
+      - name: Trigger deploy event in my-calendar-docker-compose
+        id: trigger-deploy
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          repository: username/my-calendar-docker-compose
+          event-type: deploy
+          client-payload: '{"message": "Deploy triggered from my-calendar-backend"}'
+
+      # Шаг 2: Ожидание завершения события
+      - name: Wait for deploy status
+        id: wait-for-deploy
+        uses: lewagon/wait-on-check-action@v1.2.0
+        with:
+          ref: ${{ github.ref }}
+          check-name: Deploy Pipeline
+          repo: username/my-calendar-docker-compose
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          timeout-minutes: 10
+
+      # Шаг 3: Вывод статуса
+      - name: Print deploy status
+        run:
+          echo "Deploy status: ${{ steps.wait-for-deploy.outputs.status }}"
