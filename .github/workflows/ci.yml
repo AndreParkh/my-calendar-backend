@@ -18,14 +18,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Шаг 2: Настройка JDK
+      # Шаг 2: Установка прав на выполнение для gradlew
+      - name: Set executable permissions for gradlew
+        run: chmod +x ./gradlew
+
+      # Шаг 3: Настройка JDK
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: '23'
           distribution: 'temurin'
 
-      # Шаг 3: Кэширование зависимостей Gradle
+      # Шаг 4: Кэширование зависимостей Gradle
       - name: Cache Gradle dependencies
         uses: actions/cache@v3
         with:
@@ -36,7 +40,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # Шаг 4: Сборка проекта с помощью Gradle
+      # Шаг 5: Сборка проекта с помощью Gradle
       - name: Build project with Gradle
         run: ./gradlew build --no-daemon
 
@@ -50,16 +54,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Шаг 2: Настройка JDK
+      # Шаг 2: Установка прав на выполнение для gradlew
+      - name: Set executable permissions for gradlew
+        run: chmod +x ./gradlew
+
+      # Шаг 3: Настройка JDK
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: '23'
           distribution: 'temurin'
-
-      # Шаг 3: Установка прав на выполнение для gradlew
-      - name: Set executable permissions for gradlew
-        run: chmod +x ./gradlew
 
       # Шаг 4: Запуск unit-тестов
       - name: Run unit tests
