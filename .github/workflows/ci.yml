@@ -176,9 +176,8 @@ jobs:
         with:
           ref: ${{ github.ref }}
           check-name: Deploy Pipeline
-          repo: andreparkh/my-calendar-docker-compose
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          timeout-minutes: 10
+          repo-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          wait-interval: 10
 
       # Шаг 3: Вывод статуса
       - name: Print deploy status
