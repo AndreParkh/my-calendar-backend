@@ -70,8 +70,8 @@ jobs:
         run: ./gradlew test --no-daemon
 
       # Шаг 5: Генерация отчета о покрытии кода тестами
-      - name: Generate coverage report
-        run: ./gradlew jacocoTestReport
+      #- name: Generate coverage report
+      #  run: ./gradlew jacocoTestReport
 
       # Шаг 6: Публикация отчета о покрытии в GitHub Artifacts
       - name: Upload coverage report
