@@ -126,15 +126,14 @@ jobs:
       # Шаг 2: Ожидание завершения события
       - name: Wait for deploy status
         id: wait-for-deploy
-        uses: lewagon/wait-on-check-action@v1.2.0
+        uses: lewagon/wait-on-check-action@v1.3.4
         with:
           ref: ${{ github.ref }}
           check-name: Deploy Pipeline
-          repo: username/my-calendar-docker-compose
+          repo: andreparkh/my-calendar-docker-compose
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           timeout-minutes: 10
 
       # Шаг 3: Вывод статуса
       - name: Print deploy status
-        run:
-          echo "Deploy status: ${{ steps.wait-for-deploy.outputs.status }}"
+        run: echo "Deploy status ${{ steps.wait-for-deploy.outputs.status }}"
