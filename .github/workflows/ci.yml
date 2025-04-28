@@ -69,7 +69,11 @@ jobs:
       - name: Run unit tests
         run: ./gradlew test --no-daemon
 
-      # Шаг 5: Публикация отчета о покрытии в GitHub Artifacts
+      # Шаг 5: Генерация отчета о покрытии кода тестами
+      - name: Generate coverage report
+        run: ./gradlew jacocoTestReport
+
+      # Шаг 6: Публикация отчета о покрытии в GitHub Artifacts
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
@@ -97,7 +101,11 @@ jobs:
           java-version: '23'
           distribution: 'temurin'
 
-      # Шаг 4: Сборка Docker-образа
+      # Шаг 4: Сборка проекта с помощью Gradle
+      - name: Build project with Gradle
+        run: ./gradlew build --no-daemon
+
+      # Шаг 5: Сборка Docker-образа
       - name: Build Docker image
         run: docker build -t my-calendar-backend:latest .
 
