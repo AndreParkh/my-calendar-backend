@@ -51,19 +51,19 @@ jobs:
 
     steps:
       # Шаг 1: Выполняем checkout кода
-      - name: Checkout code
-        uses: actions/checkout@v3
+      #- name: Checkout code
+      #  uses: actions/checkout@v3
 
       # Шаг 2: Установка прав на выполнение для gradlew
-      - name: Set executable permissions for gradlew
-        run: chmod +x ./gradlew
+      #- name: Set executable permissions for gradlew
+      #  run: chmod +x ./gradlew
 
       # Шаг 3: Настройка JDK
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: '23'
-          distribution: 'temurin'
+      #- name: Set up JDK
+      #  uses: actions/setup-java@v3
+      #  with:
+      #    java-version: '23'
+      #    distribution: 'temurin'
 
       # Шаг 4: Запуск unit-тестов
       - name: Run unit tests
