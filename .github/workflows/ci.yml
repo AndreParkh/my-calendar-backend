@@ -165,7 +165,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          repository: username/my-calendar-docker-compose
+          repository: andreparkh/my-calendar-docker-compose
           event-type: deploy
           client-payload: '{"message": "Deploy triggered from my-calendar-backend"}'
 
