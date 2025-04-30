@@ -1,5 +1,5 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="my-calendar-backend:jar">
+  <artifact type="jar" build-on-make="true" name="my-calendar-backend:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/my_calendar_backend_jar</output-path>
     <root id="archive" name="my-calendar-backend.jar">
       <element id="module-output" name="my-calendar-backend.main" />
