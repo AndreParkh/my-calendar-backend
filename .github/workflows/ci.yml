@@ -182,3 +182,4 @@ jobs:
       # Шаг 3: Вывод статуса
 #      - name: Print deploy status
 #       run: echo "Deploy status ${{ steps.wait-for-deploy.outputs.status }}"
+
