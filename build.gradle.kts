@@ -19,3 +19,9 @@ tasks.test {
 kotlin {
     jvmToolchain(23)
 }
+
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "main"
+    }
+}
