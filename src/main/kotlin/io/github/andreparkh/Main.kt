@@ -1,4 +1,4 @@
-package com.example.com
+package io.github.andreparkh
 
 fun main() {
     println("Hello, world!")

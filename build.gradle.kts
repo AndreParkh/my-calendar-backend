@@ -22,6 +22,6 @@ kotlin {
 
 tasks.jar {
     manifest {
-        attributes["Main-Class"] = "main"
+        attributes(mapOf("Main-Class" to "io.github.andreparkh.MainKt"))
     }
 }
