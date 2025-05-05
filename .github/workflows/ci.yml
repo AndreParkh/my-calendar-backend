@@ -169,17 +169,43 @@ jobs:
           event-type: deploy
           client-payload: '{"message": "Deploy triggered from my-calendar-backend"}'
 
-      # Шаг 2: Ожидание завершения события
-      - name: Wait for deploy status
-        id: wait-for-deploy
-        uses: lewagon/wait-on-check-action@v1.3.4
-        with:
-          ref: ${{ github.ref }}
-          check-name: Deploy
-          repo-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          wait-interval: 200
+      - name: Get Workflow Run ID
+        id: get_run_id
+        run: |
+          echo "workflow_run_id=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
+            https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs | jq -r '.workflow_runs[0].id')"
+      - name: Wait for Docker Job to Complete
+        run: |
+          WORKFLOW_RUN_ID=${{ steps.get_run_id.outputs.workflow_run_id }}
+          while true; do
+            STATUS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs/$WORKFLOW_RUN_ID | jq -r '.status')
+            if [ "$STATUS" == "completed" ]; then
+              CONCLUSION=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs/$WORKFLOW_RUN_ID | jq -r '.conclusion')
+              if [ "$CONCLUSION" == "success" ]; then
+                echo "Docker job completed successfully!"
+                exit 0
+              else
+                echo "Docker job failed!"
+                exit 1
+              fi
+            fi
+            echo "Waiting for Docker job to complete..."
+            sleep 10
+          done
 
-      # Шаг 3: Вывод статуса
-      - name: Print deploy status
-        run: echo "Deploy status ${{ steps.wait-for-deploy.outputs.status }}"
+      # Шаг 2: Ожидание завершения события
+#      - name: Wait for deploy status
+#        id: wait-for-deploy
+#        uses: lewagon/wait-on-check-action@v1.3.4
+#        with:
+#          ref: ${{ github.ref }}
+#          check-name: Deploy
+#          repo-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+#          wait-interval: 200
+#
+#      # Шаг 3: Вывод статуса
+#      - name: Print deploy status
+#        run: echo "Deploy status ${{ steps.wait-for-deploy.outputs.status }}"
 
