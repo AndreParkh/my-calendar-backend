@@ -10,152 +10,152 @@ on:
 
 jobs:
   # Job 1: Сборка проекта
-  build:
-    runs-on: ubuntu-22.04
-
-    steps:
-      # Шаг 1: Выполняем checkout кода
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Шаг 2: Установка прав на выполнение для gradlew
-      - name: Set executable permissions for gradlew
-        run: chmod +x ./gradlew
-
-      # Шаг 3: Настройка JDK
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: '23'
-          distribution: 'temurin'
-
-      # Шаг 4: Кэширование зависимостей Gradle
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      # Шаг 5: Сборка проекта с помощью Gradle
-      - name: Build project with Gradle
-        run: ./gradlew build --no-daemon
-
-  # Job 2: Запуск unit-тестов
-  test:
-    needs: build # Этот job выполняется после успешного завершения job "build"
-    runs-on: ubuntu-22.04
-
-    steps:
-      # Шаг 1: Выполняем checkout кода
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Шаг 2: Установка прав на выполнение для gradlew
-      - name: Set executable permissions for gradlew
-        run: chmod +x ./gradlew
-
-      # Шаг 3: Настройка JDK
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: '23'
-          distribution: 'temurin'
-
-      # Шаг 4: Запуск unit-тестов
-      - name: Run unit tests
-        run: ./gradlew test --no-daemon
-
-      # Шаг 5: Генерация отчета о покрытии кода тестами
-      - name: Generate coverage report
-        run: ./gradlew jacocoTestReport
-
-      # Шаг 6: Публикация отчета о покрытии в GitHub Artifacts
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: build/jacoco/
-
-  # Job 3: Создание Docker-образа
-  build-docker-image:
-    needs: test # Этот job выполняется после успешного завершения job "test"
-    runs-on: ubuntu-22.04
-
-    steps:
-      # Шаг 1: Выполняем checkout кода
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Шаг 2: Установка прав на выполнение для gradlew
-      - name: Set executable permissions for gradlew
-        run: chmod +x ./gradlew
-
-      # Шаг 3: Настройка JDK
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: '23'
-          distribution: 'temurin'
-
-      # Шаг 4: Сборка проекта с помощью Gradle
-      - name: Build project with Gradle
-        run: ./gradlew build --no-daemon
-
-      # Шаг 5: Сборка Docker-образа
-      - name: Build Docker image
-        run: docker build -t my-calendar-backend:${{ github.sha }} .
-
-  # Job 4: Публикация Docker-образа
-  publish-docker-image:
-    needs: build-docker-image # Этот job выполняется после успешного завершения job "build-docker-image"
-    runs-on: ubuntu-22.04
-
-    steps:
-      # Шаг 1: Выполняем checkout кода
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Шаг 2: Установка прав на выполнение для gradlew
-      - name: Set executable permissions for gradlew
-        run: chmod +x ./gradlew
-
-      # Шаг 3: Настройка JDK
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: '23'
-          distribution: 'temurin'
-
-      # Шаг 4: Сборка проекта с помощью Gradle
-      - name: Build project with Gradle
-        run: ./gradlew build --no-daemon
-
-      # Шаг 5: Сборка Docker-образа
-      - name: Build Docker image
-        run: docker build -t my-calendar-backend:latest .
-
-      # Шаг 6: Логин в Docker Hub
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      # Шаг 7: Переименование образа
-      - name: Tag Docker image
-        run: docker tag my-calendar-backend:latest ${{ secrets.DOCKER_HUB_USERNAME }}/my-calendar-backend:latest
-
-      # Шаг 8: Публикация Docker-образа
-      - name: Push Docker image
-        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/my-calendar-backend:latest
+#  build:
+#    runs-on: ubuntu-22.04
+#
+#    steps:
+#      # Шаг 1: Выполняем checkout кода
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      # Шаг 2: Установка прав на выполнение для gradlew
+#      - name: Set executable permissions for gradlew
+#        run: chmod +x ./gradlew
+#
+#      # Шаг 3: Настройка JDK
+#      - name: Set up JDK
+#        uses: actions/setup-java@v3
+#        with:
+#          java-version: '23'
+#          distribution: 'temurin'
+#
+#      # Шаг 4: Кэширование зависимостей Gradle
+#      - name: Cache Gradle dependencies
+#        uses: actions/cache@v3
+#        with:
+#          path: |
+#            ~/.gradle/caches
+#            ~/.gradle/wrapper
+#          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+#          restore-keys: |
+#            ${{ runner.os }}-gradle-
+#
+#      # Шаг 5: Сборка проекта с помощью Gradle
+#      - name: Build project with Gradle
+#        run: ./gradlew build --no-daemon
+#
+#  # Job 2: Запуск unit-тестов
+#  test:
+#    needs: build # Этот job выполняется после успешного завершения job "build"
+#    runs-on: ubuntu-22.04
+#
+#    steps:
+#      # Шаг 1: Выполняем checkout кода
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      # Шаг 2: Установка прав на выполнение для gradlew
+#      - name: Set executable permissions for gradlew
+#        run: chmod +x ./gradlew
+#
+#      # Шаг 3: Настройка JDK
+#      - name: Set up JDK
+#        uses: actions/setup-java@v3
+#        with:
+#          java-version: '23'
+#          distribution: 'temurin'
+#
+#      # Шаг 4: Запуск unit-тестов
+#      - name: Run unit tests
+#        run: ./gradlew test --no-daemon
+#
+#      # Шаг 5: Генерация отчета о покрытии кода тестами
+#      - name: Generate coverage report
+#        run: ./gradlew jacocoTestReport
+#
+#      # Шаг 6: Публикация отчета о покрытии в GitHub Artifacts
+#      - name: Upload coverage report
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: coverage-report
+#          path: build/jacoco/
+#
+#  # Job 3: Создание Docker-образа
+#  build-docker-image:
+#    needs: test # Этот job выполняется после успешного завершения job "test"
+#    runs-on: ubuntu-22.04
+#
+#    steps:
+#      # Шаг 1: Выполняем checkout кода
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      # Шаг 2: Установка прав на выполнение для gradlew
+#      - name: Set executable permissions for gradlew
+#        run: chmod +x ./gradlew
+#
+#      # Шаг 3: Настройка JDK
+#      - name: Set up JDK
+#        uses: actions/setup-java@v3
+#        with:
+#          java-version: '23'
+#          distribution: 'temurin'
+#
+#      # Шаг 4: Сборка проекта с помощью Gradle
+#      - name: Build project with Gradle
+#        run: ./gradlew build --no-daemon
+#
+#      # Шаг 5: Сборка Docker-образа
+#      - name: Build Docker image
+#        run: docker build -t my-calendar-backend:${{ github.sha }} .
+#
+#  # Job 4: Публикация Docker-образа
+#  publish-docker-image:
+#    needs: build-docker-image # Этот job выполняется после успешного завершения job "build-docker-image"
+#    runs-on: ubuntu-22.04
+#
+#    steps:
+#      # Шаг 1: Выполняем checkout кода
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      # Шаг 2: Установка прав на выполнение для gradlew
+#      - name: Set executable permissions for gradlew
+#        run: chmod +x ./gradlew
+#
+#      # Шаг 3: Настройка JDK
+#      - name: Set up JDK
+#        uses: actions/setup-java@v3
+#        with:
+#          java-version: '23'
+#          distribution: 'temurin'
+#
+#      # Шаг 4: Сборка проекта с помощью Gradle
+#      - name: Build project with Gradle
+#        run: ./gradlew build --no-daemon
+#
+#      # Шаг 5: Сборка Docker-образа
+#      - name: Build Docker image
+#        run: docker build -t my-calendar-backend:latest .
+#
+#      # Шаг 6: Логин в Docker Hub
+#      - name: Log in to Docker Hub
+#        uses: docker/login-action@v2
+#        with:
+#          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+#          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+#
+#      # Шаг 7: Переименование образа
+#      - name: Tag Docker image
+#        run: docker tag my-calendar-backend:latest ${{ secrets.DOCKER_HUB_USERNAME }}/my-calendar-backend:latest
+#
+#      # Шаг 8: Публикация Docker-образа
+#      - name: Push Docker image
+#        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/my-calendar-backend:latest
 
   # Job 5: Вызов события deploy и ожидание статуса
   trigger-deploy:
-    needs: publish-docker-image
+#    needs: publish-docker-image
     runs-on: ubuntu-22.04
 
     steps:
@@ -178,10 +178,10 @@ jobs:
         run: |
           WORKFLOW_RUN_ID=${{ steps.get_run_id.outputs.workflow_run_id }}
           while true; do
-            STATUS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            STATUS=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
               https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs/$WORKFLOW_RUN_ID | jq -r '.status')
             if [ "$STATUS" == "completed" ]; then
-              CONCLUSION=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              CONCLUSION=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
                 https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs/$WORKFLOW_RUN_ID | jq -r '.conclusion')
               if [ "$CONCLUSION" == "success" ]; then
                 echo "Docker job completed successfully!"
