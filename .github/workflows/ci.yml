@@ -177,7 +177,7 @@ jobs:
           ref: ${{ github.ref }}
           check-name: Deploy
           repo-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          wait-interval: 10
+          wait-interval: 200
 
       # Шаг 3: Вывод статуса
       - name: Print deploy status
