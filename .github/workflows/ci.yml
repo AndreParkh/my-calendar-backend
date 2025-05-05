@@ -181,7 +181,7 @@ jobs:
           while true; do
             STATUS=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
               https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs/$WORKFLOW_RUN_ID | jq -r '.status')
-            echo "$WORKFLOW_RUN_ID"
+            echo "$STATUS"
             if [ "$STATUS" == "completed" ]; then
               CONCLUSION=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
                 https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs/$WORKFLOW_RUN_ID | jq -r '.conclusion')
