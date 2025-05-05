@@ -178,6 +178,7 @@ jobs:
       - name: Wait for Docker Job to Complete
         run: |
           WORKFLOW_RUN_ID=${{ steps.get_run_id.outputs.workflow_run_id }}
+          echo "WORKFLOW_RUN_ID = $WORKFLOW_RUN_ID"
           while true; do
             STATUS=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
               https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs/$WORKFLOW_RUN_ID | jq -r '.status')
