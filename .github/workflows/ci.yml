@@ -157,8 +157,6 @@ jobs:
   trigger-deploy:
 #    needs: publish-docker-image
     runs-on: ubuntu-22.04
-    outputs:
-      workflow_run_id: ${{ steps.get_run_id.workflow_run_id }}
     steps:
       # Шаг 1: Отправка события deploy
       - name: Trigger deploy event in my-calendar-docker-compose
@@ -170,38 +168,35 @@ jobs:
           event-type: deploy
           client-payload: '{"message": "Deploy triggered from my-calendar-backend"}'
 
-      - name: Get Workflow Run ID
-        id: get_run_id
-        run: |
-          workflow_run_id=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-            https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs | jq -r '.workflow_runs[0].id')
+#      - name: Get Workflow Run ID
+#        id: get_run_id
+#        run: |
+#          workflow_run_id=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
+#            https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs | jq -r '.workflow_runs[0].id')
 
-  wait-for-deploy-complete:
-    needs: trigger-deploy
-    runs-on: ubuntu-latest
-    steps:
-    - name: Wait for Docker Job to Complete
-      run: |
-        WORKFLOW_RUN_ID=${{ needs.trigger-deploy.outputs.workflow_run_id }}
-        echo "WORKFLOW_RUN_ID = $WORKFLOW_RUN_ID"
-        while true; do
-          STATUS=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-            https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs/$WORKFLOW_RUN_ID | jq -r '.status')
-          echo "$STATUS"
-          if [ "$STATUS" == "completed" ]; then
-            CONCLUSION=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-              https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs/$WORKFLOW_RUN_ID | jq -r '.conclusion')
-            if [ "$CONCLUSION" == "success" ]; then
-              echo "Docker job completed successfully!"
-              exit 0
-            else
-              echo "Docker job failed!"
-              exit 1
+      - name: Wait for Docker Job to Complete
+        run: |
+          WORKFLOW_RUN_ID=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
+            https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs | jq -r '.workflow_runs[0].id')
+          echo "WORKFLOW_RUN_ID = $WORKFLOW_RUN_ID"
+          while true; do
+            STATUS=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
+              https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs/$WORKFLOW_RUN_ID | jq -r '.status')
+            echo "$STATUS"
+            if [ "$STATUS" == "completed" ]; then
+              CONCLUSION=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
+                https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs/$WORKFLOW_RUN_ID | jq -r '.conclusion')
+              if [ "$CONCLUSION" == "success" ]; then
+                echo "Docker job completed successfully!"
+                exit 0
+              else
+                echo "Docker job failed!"
+                exit 1
+              fi
             fi
-          fi
-          echo "Waiting for Docker job to complete..."
-          sleep 10
-        done
+            echo "Waiting for Docker job to complete..."
+            sleep 10
+          done
 
       # Шаг 2: Ожидание завершения события
 #      - name: Wait for deploy status
