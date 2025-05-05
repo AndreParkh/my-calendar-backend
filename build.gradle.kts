@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.1.20"
+    jacoco
 }
 
 group = "org.example"
@@ -15,6 +16,9 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
 }
 kotlin {
     jvmToolchain(23)
