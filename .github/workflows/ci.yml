@@ -168,48 +168,29 @@ jobs:
           event-type: deploy
           client-payload: '{"message": "Deploy triggered from my-calendar-backend"}'
 
-#      - name: Get Workflow Run ID
-#        id: get_run_id
-#        run: |
-#          workflow_run_id=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-#            https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs | jq -r '.workflow_runs[0].id')
-
+      # Шаг 2: Ожидание завершения события deploy
       - name: Wait for Docker Job to Complete
         run: |
           sleep 10
           WORKFLOW_RUN_ID=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
             https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs | jq -r '.workflow_runs[0].id')
           echo "WORKFLOW_RUN_ID = $WORKFLOW_RUN_ID"
+          REPO_PATH=https://api.github.com/repos/andreparkh/my-calendar-docker-compose
           while true; do
             STATUS=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-              https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs/$WORKFLOW_RUN_ID | jq -r '.status')
-            echo "$STATUS"
+              $REPO_PATH/actions/runs/$WORKFLOW_RUN_ID | jq -r '.status')
+            echo "STATUS: $STATUS"
             if [ "$STATUS" == "completed" ]; then
               CONCLUSION=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-                https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs/$WORKFLOW_RUN_ID | jq -r '.conclusion')
+                $REPO_PATH/actions/runs/$WORKFLOW_RUN_ID | jq -r '.conclusion')
               if [ "$CONCLUSION" == "success" ]; then
-                echo "Docker job completed successfully!"
+                echo "Deploy completed successfully!"
                 exit 0
               else
-                echo "Docker job failed!"
+                echo "Deploy failed!"
                 exit 1
               fi
             fi
             echo "Waiting for Docker job to complete..."
             sleep 10
           done
-
-      # Шаг 2: Ожидание завершения события
-#      - name: Wait for deploy status
-#        id: wait-for-deploy
-#        uses: lewagon/wait-on-check-action@v1.3.4
-#        with:
-#          ref: ${{ github.ref }}
-#          check-name: Deploy
-#          repo-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-#          wait-interval: 200
-#
-#      # Шаг 3: Вывод статуса
-#      - name: Print deploy status
-#        run: echo "Deploy status ${{ steps.wait-for-deploy.outputs.status }}"
-
