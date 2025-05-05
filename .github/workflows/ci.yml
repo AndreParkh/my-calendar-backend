@@ -172,8 +172,9 @@ jobs:
       - name: Get Workflow Run ID
         id: get_run_id
         run: |
-          echo "workflow_run_id=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-            https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs | jq -r '.workflow_runs[0].id')"
+          workflow_run_id=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
+            https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs | jq -r '.workflow_runs[0].id')
+          echo "get_run_id $workflow_run_id"
       - name: Wait for Docker Job to Complete
         run: |
           WORKFLOW_RUN_ID=${{ steps.get_run_id.outputs.workflow_run_id }}
@@ -181,7 +182,6 @@ jobs:
             STATUS=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
               https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs/$WORKFLOW_RUN_ID | jq -r '.status')
             echo "$WORKFLOW_RUN_ID"
-            echo "$STATUS"
             if [ "$STATUS" == "completed" ]; then
               CONCLUSION=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
                 https://api.github.com/repos/andreparkh/my-calendar-docker-compose/actions/runs/$WORKFLOW_RUN_ID | jq -r '.conclusion')
