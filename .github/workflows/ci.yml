@@ -155,7 +155,7 @@ jobs:
 
   # Job 5: Вызов события deploy и ожидание статуса
   trigger-deploy:
-#    needs: publish-docker-image
+    needs: publish-docker-image
     runs-on: ubuntu-22.04
     steps:
       # Шаг 1: Отправка события deploy
