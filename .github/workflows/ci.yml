@@ -1,12 +1,9 @@
 name: CI
 
 on:
-  push:
-    branches: [master]
   pull_request:
-    types:
-      - closed
     branches: [master]
+    types: [closed]
 
 jobs:
   # Job 1: Сборка проекта
