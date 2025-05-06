@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      # Шаг 1: Выполняем checkout кода
+      # Шаг 1: Выполняем checkout код a
       - name: Checkout code
         uses: actions/checkout@v3
 
