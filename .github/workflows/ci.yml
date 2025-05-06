@@ -2,18 +2,20 @@ name: CI
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
   pull_request:
-    branches:
-      - master
+    types:
+      - closed
+    branches: [master]
 
 jobs:
   # Job 1: Сборка проекта
   build:
     runs-on: ubuntu-22.04
-
+    if: github.event.pull_request.merged == true
     steps:
+      - name: asd
+        run: github.event.pull_request.merged ==
       # Шаг 1: Выполняем checkout кода
       - name: Checkout code
         uses: actions/checkout@v3
