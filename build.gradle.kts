@@ -36,8 +36,8 @@ kotlin {
     jvmToolchain(23)
 }
 
-tasks.jar.configure {
-    manifest {
-        attributes(mapOf("Main-Class" to "io.github.andreparkh.MainKt"))
-    }
-}
+//tasks.jar.configure {
+//    manifest {
+//        attributes(mapOf("Main-Class" to "io.github.andreparkh.MainKt"))
+//    }
+//}
