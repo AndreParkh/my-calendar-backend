@@ -8,4 +8,6 @@ WORKDIR /app
 COPY build/libs/*.jar my-calendar-backend.jar
 
 # Команда для запуска приложения
-ENTRYPOINT ["java", "-jar", "my-calendar-backend.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "my-calendar-backend.jar"]
+
+#  "-Dspring.profiles.active=prod",
