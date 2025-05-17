@@ -21,11 +21,11 @@ data class Task(
     var deadline: LocalDateTime? = null,
 
     @ManyToOne
-    @JoinColumn(name = "user_id",nullable = false)
+    @JoinColumn(name = "created_by",nullable = false)
     val createdBy: User,
 
     @ManyToOne
-    @JoinColumn(name = "user_id",nullable = false)
+    @JoinColumn(name = "assigned_to",nullable = false)
     var assignedTo: User,
 
     @Enumerated(EnumType.STRING)
