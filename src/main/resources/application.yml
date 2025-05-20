@@ -1,11 +1,46 @@
+# Общие настройки (применяются ко всем профилям)
 spring:
+  jpa:
+    show-sql: true
+
+springdoc:
+  api-docs:
+    enabled: true
+    title: My Calendar
+    description: API documentation for My Calendar
+    version: OPENAPI_3_0
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+---
+# Настройки для профиля prod
+spring:
+  config:
+    activate:
+      on-profile: prod
   datasource:
-    url: jdbc:postgresql://localhost:5432/mydb
-    username: admin
-    password: password
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      dll-auto: update
-    show-sql: true
+      ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+---
+# Настройки для тестового профиля
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
