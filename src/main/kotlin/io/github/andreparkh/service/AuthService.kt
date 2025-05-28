@@ -7,6 +7,7 @@ import io.github.andreparkh.model.User
 import io.github.andreparkh.repository.UserRepository
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -17,6 +18,7 @@ class AuthService(
     private val jwtService: JwtService,
     private val passwordEncoder: PasswordEncoder,
     private val authenticationManager: AuthenticationManager,
+    private val userDetailsService: UserDetailsService
 ) {
 
     fun register(request: RegisterRequest): AuthResponse {
@@ -30,19 +32,16 @@ class AuthService(
         val savedUser = userRepository.save(user)
         userRepository.flush()
 
-        return AuthResponse(jwtService.generateTokenWithRoles(savedUser, emptyList()))
+        return AuthResponse(jwtService.generateToken(savedUser.email))
     }
 
     fun login(request: LoginRequest): AuthResponse {
-        val autentication = authenticationManager.authenticate(
+        authenticationManager.authenticate(
             UsernamePasswordAuthenticationToken(request.email, request.password)
         )
 
-        val userDetails = autentication.principal as org.springframework.security.core.userdetails.User
-        val user = userRepository.findByEmail(userDetails.username) ?: throw UsernameNotFoundException("User not found")
-
-        val token = jwtService.generateTokenWithRoles(user, emptyList())
-
+        val userDetails = userDetailsService.loadUserByUsername(request.email)
+        val token = jwtService.generateToken(userDetails.username)
         return AuthResponse(token)
     }
 }

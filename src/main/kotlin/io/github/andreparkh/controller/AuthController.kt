@@ -7,7 +7,7 @@ import io.github.andreparkh.service.AuthService
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("api/auth")
+@RequestMapping("/api/auth")
 class AuthController(
     private val authService: AuthService
 ) {
