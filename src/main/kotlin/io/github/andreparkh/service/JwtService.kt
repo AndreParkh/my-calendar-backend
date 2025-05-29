@@ -12,14 +12,13 @@ import java.util.Date
 @Service
 class JwtService() {
 
-//    @Value("\${security.jwt.secret-key}")
-//    private lateinit var secretKey: String
-
     val key = Keys.secretKeyFor(SignatureAlgorithm.HS512)
     val secretKey = Base64.getEncoder().encodeToString(key.encoded)
 
-    @Value("\${security.jwt.expiration-time}")
-    private var expirationTime: Long = 86400000 // 24 часа /вынести константой
+    @Value("\${security.jwt.expiration-hours}")
+    val expirationHours: Long = 0
+
+    private var expirationMillis: Long = expirationHours * 60 * 60 * 1000
 
     private fun getKey(): Key {
         val keyBytes = Decoders.BASE64.decode(secretKey)
@@ -29,7 +28,7 @@ class JwtService() {
     fun generateToken(email: String): String {
         return Jwts.builder()
             .setSubject(email)
-            .setExpiration(Date(System.currentTimeMillis() + expirationTime))
+            .setExpiration(Date(System.currentTimeMillis() + expirationMillis))
             .signWith(getKey(), SignatureAlgorithm.HS512)
             .compact()
     }

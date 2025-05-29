@@ -13,19 +13,17 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Configuration
-//@EnableWebSecurity
+@EnableWebSecurity
 class SecurityConfig(
     private val jwtTokenFilter: JwtTokenFilter
 ) {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http.csrf() { it.disable() }
-            //.sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
-            //.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+            .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter::class.java)
             .authorizeHttpRequests {
                 it.requestMatchers("/api/auth/**")
-                    .permitAll()
-                    .requestMatchers("/api/test")
                     .permitAll()
                     .anyRequest()
                     .authenticated()
