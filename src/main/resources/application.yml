@@ -16,7 +16,7 @@ springdoc:
 security:
   jwt:
     secret-key: mySuperSecureSecretThatIsLongEnoughAndMeetsTheRequirementsOfTheHS512Algorithm!
-    expiration-hours: 24
+    expiration-time: 86400000 #  24 часа
 
 server:
   port: 5000
