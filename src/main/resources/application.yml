@@ -13,6 +13,14 @@ springdoc:
     enabled: true
     path: /swagger-ui.html
 
+security:
+  jwt:
+    secret-key: mySuperSecureSecretThatIsLongEnoughAndMeetsTheRequirementsOfTheHS512Algorithm!
+    expiration-time: 86400000 #  24 часа
+
+server:
+  port: 5000
+  address: 0.0.0.0
 ---
 # Настройки для профиля prod
 spring:
