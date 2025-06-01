@@ -1,5 +1,6 @@
 package io.github.andreparkh.service
 
+import io.github.andreparkh.config.AppRoles
 import io.github.andreparkh.repository.UserRepository
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
@@ -19,7 +20,7 @@ class UserDetailsServiceImpl(
         return User
             .withUsername(user.email)
             .password(user.passwordHash)
-            .authorities(SimpleGrantedAuthority("USER"))
+            .authorities(SimpleGrantedAuthority(AppRoles.USER_ROLE))
             .build()
     }
 

@@ -22,13 +22,10 @@ class JwtTokenFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val authorizationHeader = "Authorization"
-        val typeToken = "Bearer"
-        val startPositionToken = 7
 
-        val authHeader = request.getHeader(authorizationHeader)
-        if (authHeader != null && authHeader.startsWith("$typeToken " )) {
-            val token = authHeader.substring(startPositionToken)
+        val authHeader = request.getHeader(JwtConstants.AUTHORIZATION_HEADER)
+        if (authHeader != null && authHeader.startsWith("${JwtConstants.TYPE_TOKEN} " )) {
+            val token = authHeader.substring(JwtConstants.START_POSITION_TOKEN)
             if (jwtService.isTokenValid(token)) {
                 val email = jwtService.extractEmail(token)
                 val userDetails = userDetailsService.loadUserByUsername(email)
