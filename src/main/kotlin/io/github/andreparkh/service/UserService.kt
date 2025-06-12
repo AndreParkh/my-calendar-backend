@@ -39,6 +39,10 @@ class UserService(private val userRepository: UserRepository) {
         return null
     }
 
+    fun getAllUsers(): List<User> {
+        return userRepository.findAll()
+    }
+
     fun deleteUser(id: Long) {
         userRepository.deleteById(id)
     }
