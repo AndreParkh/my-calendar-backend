@@ -1,10 +1,9 @@
 package io.github.andreparkh.service
 
+import io.github.andreparkh.dto.UpdateUser
 import io.github.andreparkh.model.User
 import io.github.andreparkh.repository.UserRepository
 import org.springframework.stereotype.Service
-import java.time.LocalDate
-import java.time.LocalTime
 
 @Service
 class UserService(private val userRepository: UserRepository) {
@@ -27,13 +26,17 @@ class UserService(private val userRepository: UserRepository) {
         return userRepository.findById(id).orElse(null)
     }
 
-    fun updateUser(id: Long, updateUser: User): User? {
+    fun updateUser(id: Long, updateUser: UpdateUser): User? {
         val existingUser = userRepository.findById(id).orElse(null)
         if(existingUser != null) {
-            existingUser.email = updateUser.email
-            existingUser.passwordHash = updateUser.passwordHash
             existingUser.firstName = updateUser.firstName
             existingUser.lastName = updateUser.lastName
+            existingUser.avatarUrl = updateUser.avatarUrl
+            existingUser.workStartTime = updateUser.workStartTime
+            existingUser.workEndTime = updateUser.workEndTime
+            existingUser.vacationStart = updateUser.vacationStart
+            existingUser.vacationEnd = updateUser.vacationEnd
+
             return userRepository.save(existingUser)
         }
         return null

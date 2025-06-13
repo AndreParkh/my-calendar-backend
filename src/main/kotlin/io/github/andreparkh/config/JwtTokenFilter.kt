@@ -26,6 +26,7 @@ class JwtTokenFilter(
         val authHeader = request.getHeader(JwtConstants.AUTHORIZATION_HEADER)
         if (authHeader != null && authHeader.startsWith("${JwtConstants.TYPE_TOKEN} " )) {
             val token = authHeader.substring(JwtConstants.START_POSITION_TOKEN)
+            print(token)
             if (jwtService.isTokenValid(token)) {
                 val email = jwtService.extractEmail(token)
                 val userDetails = userDetailsService.loadUserByUsername(email)
