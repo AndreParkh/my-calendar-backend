@@ -31,9 +31,7 @@ class SecurityConfig(
                     .requestMatchers("/api/public/**")
                     .permitAll()
                     .requestMatchers("/api/private/**")
-//                    .authenticated()
-                    .permitAll()
-
+                    .authenticated()
             }
         return http.build()
     }
