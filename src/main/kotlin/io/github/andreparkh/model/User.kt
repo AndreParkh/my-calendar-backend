@@ -1,5 +1,7 @@
 package io.github.andreparkh.model
 
+import io.github.andreparkh.config.AppRoles
+import io.github.andreparkh.dto.ResponseUser
 import jakarta.persistence.*
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -24,6 +26,9 @@ data class User (
     @Column(nullable = false)
     var lastName: String,
 
+    @Column(nullable = false)
+    var role: String? = AppRoles.USER_ROLE,
+
     @Column
     var avatarUrl: String? = null,
 
@@ -43,10 +48,33 @@ data class User (
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
     @Column
-    var updatedAt: LocalDateTime? = null
+    var updatedAt: LocalDateTime? = null,
+
+    @Column
+    var deleteAt: LocalDateTime? = null
 ) {
     @PreUpdate
     fun onUpdate(){
         this.updatedAt = LocalDateTime.now()
     }
+
+    fun onDelete(){
+        this.deleteAt = LocalDateTime.now()
+    }
+
+    fun toResponseUser() = ResponseUser(
+        id = this.id,
+        email = this.email,
+        firstName = this.firstName,
+        lastName = this.lastName,
+        role = this.role,
+        avatarUrl = this.avatarUrl,
+        workStartTime = this.workStartTime,
+        workEndTime = this.workEndTime,
+        vacationStart = this.vacationStart,
+        vacationEnd = this.vacationEnd,
+        createdAt = this.createdAt,
+        updatedAt = this.updatedAt
+    )
+
 }

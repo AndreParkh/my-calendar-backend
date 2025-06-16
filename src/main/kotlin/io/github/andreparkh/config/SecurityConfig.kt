@@ -32,6 +32,8 @@ class SecurityConfig(
                     .permitAll()
                     .requestMatchers("/api/private/**")
                     .authenticated()
+                    .requestMatchers("/api/private/admin/**")
+                    .hasAuthority(AppRoles.ADMIN_ROLE)
             }
         return http.build()
     }

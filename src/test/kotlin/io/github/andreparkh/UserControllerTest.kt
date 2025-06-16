@@ -49,7 +49,6 @@ class UserControllerTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.token").isNotEmpty)
 
-
         val token = resultAction
             .andReturn()
             .response
@@ -63,7 +62,6 @@ class UserControllerTest {
                 .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token")
                 .contentType(MediaType.APPLICATION_JSON)
         )
-//            .andDo(print())
             .andExpect(jsonPath("$.length()").value(2))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$[0].firstName").value(registerRequest1.firstName))
@@ -121,8 +119,6 @@ class UserControllerTest {
             .andExpect(jsonPath("$.lastName").value(registerRequest1.lastName))
     }
 
-
-
     @Test
     fun `should update user`() {
 
@@ -143,26 +139,6 @@ class UserControllerTest {
             .get("token")
             .asText()
 
-        val userList = mockMvc.perform(
-            get("/api/private/users")
-                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token")
-                .contentType(MediaType.APPLICATION_JSON)
-        )
-            .andReturn()
-            .response
-            .contentAsString
-            .let { objectMapper.readTree( it ) }
-
-        var userId: Long? = 0
-
-        for (user in userList) {
-            val email = user.get("email").asText()
-            if (email == registerRequest1.email) {
-                userId = user.get("id").asLong()
-                break
-            }
-        }
-
         val updateUser = UpdateUser(
             firstName = "JohnUpdate",
             lastName = "DoeUpdate",
@@ -174,7 +150,7 @@ class UserControllerTest {
             )
 
         mockMvc.perform(
-            put("/api/private/users/$userId")
+            put("/api/private/users/me")
                 .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateUser))

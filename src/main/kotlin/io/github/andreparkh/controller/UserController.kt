@@ -1,5 +1,6 @@
 package io.github.andreparkh.controller
 
+import io.github.andreparkh.dto.ResponseUser
 import io.github.andreparkh.dto.UpdateUser
 import io.github.andreparkh.model.User
 import io.github.andreparkh.service.UserService
@@ -9,6 +10,8 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.http.ResponseEntity
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
 
@@ -26,7 +29,7 @@ class UserController (
         responses = [
             ApiResponse(responseCode = "200", description = "Пользователь найден",
                 content = [Content(mediaType = "application/json",
-                    schema = Schema(implementation = User::class))]),
+                    schema = Schema(implementation = ResponseUser::class))]),
             ApiResponse(responseCode = "404", description = "Пользователь не найден")
         ]
     )
@@ -34,7 +37,7 @@ class UserController (
         @PathVariable
         @Parameter(description = "ID пользователя", required = true)
         id: Long
-    ): User? {
+    ): ResponseUser? {
         return userService.getUserById(id)
     }
 
@@ -45,40 +48,53 @@ class UserController (
         responses = [
             ApiResponse(responseCode = "200", description = "Список пользователей успешно получен",
                 content = [Content(mediaType = "application/json",
-                    schema = Schema(implementation = Array<User>::class))]),
+                    schema = Schema(implementation = Array<ResponseUser>::class))]),
             ApiResponse(responseCode = "404", description = "Пользователи не найдены")
         ]
     )
-    fun getAllUsers(): List<User> {
+    fun getAllUsers(): List<ResponseUser> {
         return userService.getAllUsers()
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/me")
     @Operation(
-        summary = "Обновить пользователя",
-        description = "Обновить данные пользователя по его ID",
+        summary = "Обновить данные текущего пользователя",
+        description = "Позволяет авторизованному пользователю обновить свои личные данные",
         responses = [
             ApiResponse(responseCode = "200", description = "Пользователь успешно обновлен",
                 content = [Content(mediaType = "application/json",
-                    schema = Schema(implementation = User::class))]),
-            ApiResponse(responseCode = "400", description = "Некорректные данные пользователя"),
-            ApiResponse(responseCode = "404", description = "Пользователь с указанным ID не найден")
+                    schema = Schema(implementation = ResponseUser::class))]),
+            ApiResponse(responseCode = "400", description = "Некорректные данные запроса или поля имеют недопустимые значения"),
+            ApiResponse(responseCode = "401", description = "Пользователь не авторизован")
         ]
     )
     fun updateUser(
-        @PathVariable
-        @Parameter(description = "ID пользователя", required = true)
-        id: Long,
+        @Parameter(
+            description = "Данные авторизованного пользователя. Используется для получения email текущего пользователя",
+            required = true)
+        authentication: Authentication,
 
         @RequestBody
         @Parameter(
-            description = "Данные для обновления пользователя",
+            description = "JSON-объект с данными для обновления пользователя",
             required = true,
             content = [Content(mediaType = "application/json",
                 schema = Schema(implementation = UpdateUser::class)) ]
         )
         updateUser: UpdateUser
-    ): User? {
-        return userService.updateUser(id, updateUser)
+    ): ResponseUser? {
+        return userService.updateUser(authentication.name, updateUser)
+    }
+
+    @DeleteMapping("/me")
+    @Operation()
+    fun deleteMyAccount(
+        authentication: Authentication
+    ): ResponseEntity<Unit> {
+        val email = authentication.name
+        val deleted = userService.deleteUserByEmail(email)
+
+        return if (deleted) ResponseEntity.ok().build()
+        else ResponseEntity.notFound().build()
     }
 }
