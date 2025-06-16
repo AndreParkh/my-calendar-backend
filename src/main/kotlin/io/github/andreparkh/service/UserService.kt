@@ -59,7 +59,7 @@ class UserService(private val userRepository: UserRepository) {
 
     fun deleteUserByEmail(email: String): Boolean {
         val deletedUser = userRepository.findByEmail(email).orElse(null) ?: return false
-        deletedUser.onDelete()
+        userRepository.delete(deletedUser)
         return true
     }
 

@@ -70,6 +70,7 @@ class UserControllerTest {
             .andExpect(jsonPath("$[1].lastName").value(registerRequest2.lastName))
     }
 
+    @Test
     fun `should get user by ID`() {
 
         val createResponse = mockMvc.perform(

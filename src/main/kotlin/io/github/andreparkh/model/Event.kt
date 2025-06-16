@@ -1,6 +1,8 @@
 package io.github.andreparkh.model
 
 import jakarta.persistence.*
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import java.time.LocalDateTime
 
 @Entity
@@ -22,6 +24,7 @@ data class Event(
     @Column(nullable = false)
     var endTime: LocalDateTime,
 
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     var createdBy: User,

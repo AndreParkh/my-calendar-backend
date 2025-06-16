@@ -2,6 +2,8 @@ package io.github.andreparkh.model
 
 import io.github.andreparkh.enums.TastStatus
 import jakarta.persistence.*
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import java.time.LocalDateTime
 
 @Entity
@@ -20,10 +22,12 @@ data class Task(
     @Column
     var deadline: LocalDateTime? = null,
 
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @ManyToOne
     @JoinColumn(name = "created_by",nullable = false)
     val createdBy: User,
 
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @ManyToOne
     @JoinColumn(name = "assigned_to",nullable = false)
     var assignedTo: User,
