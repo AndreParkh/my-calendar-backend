@@ -49,17 +49,10 @@ data class User (
 
     @Column
     var updatedAt: LocalDateTime? = null,
-
-    @Column
-    var deleteAt: LocalDateTime? = null
 ) {
     @PreUpdate
     fun onUpdate(){
         this.updatedAt = LocalDateTime.now()
-    }
-
-    fun onDelete(){
-        this.deleteAt = LocalDateTime.now()
     }
 
     fun toResponseUser() = ResponseUser(

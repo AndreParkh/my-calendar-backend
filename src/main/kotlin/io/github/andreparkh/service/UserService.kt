@@ -1,5 +1,6 @@
 package io.github.andreparkh.service
 
+import io.github.andreparkh.config.AppRoles
 import io.github.andreparkh.dto.ResponseUser
 import io.github.andreparkh.dto.UpdateUser
 import io.github.andreparkh.model.User
@@ -31,9 +32,14 @@ class UserService(private val userRepository: UserRepository) {
         return userRepository.findById(id).orElse(null)?.toResponseUser()
     }
 
-    fun updateUser(email: String, updateUser: UpdateUser): ResponseUser? {
+    fun updateUser(id: Long, updateUser: UpdateUser, currentUserEmail: String): ResponseUser? {
 
-        val existingUser = userRepository.findByEmail(email).orElse(null) ?: return null
+        val existingUser = userRepository.findById(id).orElse(null) ?: return null
+        val currentUser = userRepository.findByEmail(currentUserEmail).orElse(null) ?: return null
+
+        val isAdmin = currentUser.role == AppRoles.ADMIN_ROLE
+        val isChangeSelf = currentUser.id == existingUser.id
+        if (!isAdmin && !isChangeSelf) return null
 
         existingUser.firstName = updateUser.firstName
         existingUser.lastName = updateUser.lastName
@@ -51,16 +57,15 @@ class UserService(private val userRepository: UserRepository) {
         return userRepository.findAll().map{ it.toResponseUser() }
     }
 
-    fun deleteUserById(id: Long): Boolean {
-        if (!userRepository.existsById(id)) return false
+    fun deleteUserById(id: Long, currentUserEmail: String): Boolean {
+        val existingUser = userRepository.findById(id).orElse(null) ?: return false
+        val currentUser = userRepository.findByEmail(currentUserEmail).orElse(null) ?: return false
+
+        val isAdmin = currentUser.role == AppRoles.ADMIN_ROLE
+        val isDeleteSelf = currentUser.id == existingUser.id
+        if (!isAdmin && !isDeleteSelf) return false
+
         userRepository.deleteById(id)
         return true
     }
-
-    fun deleteUserByEmail(email: String): Boolean {
-        val deletedUser = userRepository.findByEmail(email).orElse(null) ?: return false
-        userRepository.delete(deletedUser)
-        return true
-    }
-
 }

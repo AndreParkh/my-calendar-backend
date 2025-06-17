@@ -56,10 +56,10 @@ class UserController (
         return userService.getAllUsers()
     }
 
-    @PutMapping("/me")
+    @PutMapping("/{id}")
     @Operation(
         summary = "Обновить данные текущего пользователя",
-        description = "Позволяет авторизованному пользователю обновить свои личные данные",
+        description = "Позволяет пользователю обновить личные данные",
         responses = [
             ApiResponse(responseCode = "200", description = "Пользователь успешно обновлен",
                 content = [Content(mediaType = "application/json",
@@ -69,10 +69,9 @@ class UserController (
         ]
     )
     fun updateUser(
-        @Parameter(
-            description = "Данные авторизованного пользователя. Используется для получения email текущего пользователя",
-            required = true)
-        authentication: Authentication,
+        @PathVariable
+        @Parameter(description = "ID пользователя", required = true)
+        id: Long,
 
         @RequestBody
         @Parameter(
@@ -81,18 +80,27 @@ class UserController (
             content = [Content(mediaType = "application/json",
                 schema = Schema(implementation = UpdateUser::class)) ]
         )
-        updateUser: UpdateUser
+        updateUser: UpdateUser,
+
+        @Parameter(
+            description = "Данные авторизованного пользователя. Используется для получения email текущего пользователя")
+        authentication: Authentication
     ): ResponseUser? {
-        return userService.updateUser(authentication.name, updateUser)
+        return userService.updateUser(id, updateUser, authentication.name)
     }
 
-    @DeleteMapping("/me")
+    @DeleteMapping("/{id}")
     @Operation()
-    fun deleteMyAccount(
+    fun deleteById(
+        @PathVariable
+        @Parameter(description = "ID пользователя", required = true)
+        id: Long,
+
+        @Parameter(
+            description = "Данные авторизованного пользователя. Используется для получения email текущего пользователя")
         authentication: Authentication
     ): ResponseEntity<Unit> {
-        val email = authentication.name
-        val deleted = userService.deleteUserByEmail(email)
+        val deleted = userService.deleteUserById(id, authentication.name)
 
         return if (deleted) ResponseEntity.ok().build()
         else ResponseEntity.notFound().build()

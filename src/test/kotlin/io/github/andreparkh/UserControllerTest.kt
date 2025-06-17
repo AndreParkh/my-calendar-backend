@@ -140,6 +140,26 @@ class UserControllerTest {
             .get("token")
             .asText()
 
+        val userList = mockMvc.perform(
+            get("/api/private/users")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andReturn()
+            .response
+            .contentAsString
+            .let { objectMapper.readTree( it ) }
+
+        var userId: Long? = 0
+
+        for (user in userList) {
+            val email = user.get("email").asText()
+            if (email == registerRequest1.email) {
+                userId = user.get("id").asLong()
+                break
+            }
+        }
+
         val updateUser = UpdateUser(
             firstName = "JohnUpdate",
             lastName = "DoeUpdate",
@@ -151,7 +171,7 @@ class UserControllerTest {
             )
 
         mockMvc.perform(
-            put("/api/private/users/me")
+            put("/api/private/users/$userId")
                 .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateUser))
