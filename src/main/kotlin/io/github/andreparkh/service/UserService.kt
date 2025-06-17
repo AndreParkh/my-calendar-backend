@@ -5,8 +5,9 @@ import io.github.andreparkh.dto.ResponseUser
 import io.github.andreparkh.dto.UpdateUser
 import io.github.andreparkh.model.User
 import io.github.andreparkh.repository.UserRepository
+import jakarta.persistence.EntityNotFoundException
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
 
 @Service
 class UserService(private val userRepository: UserRepository) {
@@ -24,7 +25,6 @@ class UserService(private val userRepository: UserRepository) {
             lastName = lastName)
 
         val savedUser = userRepository.save(user)
-
         return savedUser.toResponseUser()
     }
 
@@ -34,12 +34,16 @@ class UserService(private val userRepository: UserRepository) {
 
     fun updateUser(id: Long, updateUser: UpdateUser, currentUserEmail: String): ResponseUser? {
 
-        val existingUser = userRepository.findById(id).orElse(null) ?: return null
-        val currentUser = userRepository.findByEmail(currentUserEmail).orElse(null) ?: return null
+        val existingUser = userRepository.findById(id)
+            .orElseThrow{ EntityNotFoundException("Пользователь с ID $id не найден") }
+
+        val currentUser = userRepository.findByEmail(currentUserEmail)
+            .orElseThrow{ EntityNotFoundException("Текущий пользователь не найден") }
 
         val isAdmin = currentUser.role == AppRoles.ADMIN_ROLE
         val isChangeSelf = currentUser.id == existingUser.id
-        if (!isAdmin && !isChangeSelf) return null
+        if (!isAdmin && !isChangeSelf)
+            throw AccessDeniedException("Недостаточно прав для изменения")
 
         existingUser.firstName = updateUser.firstName
         existingUser.lastName = updateUser.lastName
@@ -58,14 +62,38 @@ class UserService(private val userRepository: UserRepository) {
     }
 
     fun deleteUserById(id: Long, currentUserEmail: String): Boolean {
-        val existingUser = userRepository.findById(id).orElse(null) ?: return false
-        val currentUser = userRepository.findByEmail(currentUserEmail).orElse(null) ?: return false
+        val existingUser = userRepository.findById(id)
+            .orElseThrow{ EntityNotFoundException("Пользователь с ID $id не найден") }
 
-        val isAdmin = currentUser.role == AppRoles.ADMIN_ROLE
+        val currentUser = userRepository.findByEmail(currentUserEmail)
+            .orElseThrow{ EntityNotFoundException("Текущий пользователь не найден") }
+
+        val isAdmin = currentUser.isAdmin()
         val isDeleteSelf = currentUser.id == existingUser.id
-        if (!isAdmin && !isDeleteSelf) return false
+
+        if (!isAdmin && !isDeleteSelf)
+            throw AccessDeniedException("Недостаточно прав для изменения")
 
         userRepository.deleteById(id)
         return true
     }
+
+    fun changeRoleById(id: Long, newRole: String, currentUserEmail: String): Boolean {
+        if (newRole !in listOf(AppRoles.USER_ROLE, AppRoles.ADMIN_ROLE))
+            throw IllegalArgumentException("Неккоректная роль: $newRole")
+
+        val existingUser = userRepository.findById(id)
+            .orElseThrow{ EntityNotFoundException("Пользователь с ID $id не найден") }
+
+        val currentUser = userRepository.findByEmail(currentUserEmail)
+            .orElseThrow{ EntityNotFoundException("Текущий пользователь не найден") }
+
+        if (!currentUser.isAdmin())
+            throw AccessDeniedException("Недостаточно прав для изменения")
+
+        existingUser.role = newRole
+        userRepository.save(existingUser)
+        return true
+    }
+
 }

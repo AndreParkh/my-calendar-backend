@@ -1,5 +1,6 @@
 package io.github.andreparkh.controller
 
+import io.github.andreparkh.dto.ChangeRoleRequest
 import io.github.andreparkh.dto.ResponseUser
 import io.github.andreparkh.dto.UpdateUser
 import io.github.andreparkh.model.User
@@ -88,6 +89,35 @@ class UserController (
     ): ResponseUser? {
         return userService.updateUser(id, updateUser, authentication.name)
     }
+
+    @PutMapping("/{id}/role")
+    @Operation(
+        summary = "Изменение роли пользователя",
+        description = "Позволяет администратору изменить роль пользователя по его ID",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Роль успешно изменена"),
+            ApiResponse(responseCode = "400", description = "Ошибка запроса: неверная роль или пользователь не найден"),
+            ApiResponse(responseCode = "400", description = "Пользователь с указанным ID не найден")
+        ]
+    )
+    fun changeRoleById(
+        @PathVariable
+        @Parameter(description = "ID пользователя, чья роль будет изменена")
+        id: Long,
+
+        @RequestBody
+        @Parameter(description = "Новая роль пользователя")
+        request: ChangeRoleRequest,
+
+        authentication: Authentication
+    ): ResponseEntity<Unit> {
+        val success = userService.changeRoleById(id, request.role, authentication.name)
+
+        return if (success) ResponseEntity.ok().build()
+        else ResponseEntity.badRequest().build()
+    }
+
+
 
     @DeleteMapping("/{id}")
     @Operation()

@@ -55,6 +55,8 @@ data class User (
         this.updatedAt = LocalDateTime.now()
     }
 
+    fun isAdmin(): Boolean = this.role == AppRoles.ADMIN_ROLE
+
     fun toResponseUser() = ResponseUser(
         id = this.id,
         email = this.email,
