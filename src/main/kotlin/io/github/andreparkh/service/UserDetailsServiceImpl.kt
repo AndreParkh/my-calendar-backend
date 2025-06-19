@@ -1,6 +1,5 @@
 package io.github.andreparkh.service
 
-import io.github.andreparkh.config.AppRoles
 import io.github.andreparkh.repository.UserRepository
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
@@ -15,12 +14,12 @@ class UserDetailsServiceImpl(
 ): UserDetailsService {
     override fun loadUserByUsername(username: String): UserDetails {
         val user = userRepository.findByEmail(username)
-            ?: throw UsernameNotFoundException("User not found")
+            .orElseThrow{ UsernameNotFoundException("User not found") }
 
         return User
             .withUsername(user.email)
             .password(user.passwordHash)
-            .authorities(SimpleGrantedAuthority(AppRoles.USER_ROLE))
+            .authorities(SimpleGrantedAuthority(user.role))
             .build()
     }
 

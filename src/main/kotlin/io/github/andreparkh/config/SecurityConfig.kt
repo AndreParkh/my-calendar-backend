@@ -23,12 +23,17 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter::class.java)
             .authorizeHttpRequests {
-                it.requestMatchers("/api/auth/**")
+                it
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
+                    .permitAll()
+                    .requestMatchers("/api/auth/**")
                     .permitAll()
                     .requestMatchers("/api/public/**")
                     .permitAll()
                     .requestMatchers("/api/private/**")
                     .authenticated()
+                    .requestMatchers("/api/private/admin/**")
+                    .hasAuthority(AppRoles.ADMIN_ROLE)
             }
         return http.build()
     }
