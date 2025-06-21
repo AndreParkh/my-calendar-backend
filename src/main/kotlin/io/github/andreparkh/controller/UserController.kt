@@ -3,7 +3,6 @@ package io.github.andreparkh.controller
 import io.github.andreparkh.dto.ChangeRoleRequest
 import io.github.andreparkh.dto.ResponseUser
 import io.github.andreparkh.dto.UpdateUser
-import io.github.andreparkh.model.User
 import io.github.andreparkh.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -97,7 +96,7 @@ class UserController (
         responses = [
             ApiResponse(responseCode = "200", description = "Роль успешно изменена"),
             ApiResponse(responseCode = "400", description = "Ошибка запроса: неверная роль или пользователь не найден"),
-            ApiResponse(responseCode = "400", description = "Пользователь с указанным ID не найден")
+            ApiResponse(responseCode = "404", description = "Пользователь с указанным ID не найден")
         ]
     )
     fun changeRoleById(
@@ -109,6 +108,8 @@ class UserController (
         @Parameter(description = "Новая роль пользователя")
         request: ChangeRoleRequest,
 
+        @Parameter(
+            description = "Данные авторизованного пользователя. Используется для получения email текущего пользователя")
         authentication: Authentication
     ): ResponseEntity<Unit> {
         val success = userService.changeRoleById(id, request.role, authentication.name)
@@ -116,8 +117,6 @@ class UserController (
         return if (success) ResponseEntity.ok().build()
         else ResponseEntity.badRequest().build()
     }
-
-
 
     @DeleteMapping("/{id}")
     @Operation()
