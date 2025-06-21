@@ -1,5 +1,6 @@
 package io.github.andreparkh.controller
 
+import io.github.andreparkh.config.HttpConstants
 import io.github.andreparkh.dto.group.*
 import io.github.andreparkh.service.GroupService
 import io.swagger.v3.oas.annotations.Operation
@@ -15,7 +16,7 @@ import java.net.URI
 
 @RestController
 @RequestMapping("/api/private/groups")
-@Tag(name = "Группы", description = "API для работы с группами пользователей")
+@Tag(name = "Управление группами", description = "API для работы с группами пользователей")
 class GroupController (
   private val groupService: GroupService
 ) {
@@ -25,7 +26,7 @@ class GroupController (
         description = "Позволяет пользователю создать новую групп. Возвращается созданная группа с уникальным ID",
         responses = [
             ApiResponse(responseCode = "201", description = "Группа успешно создана", content = [
-                Content(mediaType = "application/json", schema = Schema(implementation = GroupResponse::class))
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = GroupResponse::class))
             ]),
             ApiResponse(responseCode = "400", description = "Некорректные данные запроса", content = [])
         ]
@@ -48,7 +49,7 @@ class GroupController (
         description = "Возвращает информацию о группе по ее уникальному ID",
         responses = [
             ApiResponse(responseCode = "200", description = "Информация о группе", content = [
-                Content(mediaType = "application/json", schema = Schema(implementation = GroupResponse::class))
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = GroupResponse::class))
             ]),
             ApiResponse(responseCode = "404", description = "Группа не найдена", content = [])
         ]
@@ -68,7 +69,7 @@ class GroupController (
         description = "Позволяет пользователю присоединиться к группе по пригласительному токену",
         responses = [
             ApiResponse(responseCode = "200", description = "Успешное присоединение к группе", content = [
-                Content(mediaType = "application/json", schema = Schema(implementation = GroupResponse::class))
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = GroupResponse::class))
             ]),
             ApiResponse(responseCode = "400", description = "Неверный токен или пользователь уже состоит в группе", content = []),
             ApiResponse(responseCode = "404", description = "Группа не найдена", content = [])
@@ -86,13 +87,13 @@ class GroupController (
         return ResponseEntity.ok(joinedGroup)
     }
 
-    @GetMapping("{groupId}/members")
+    @GetMapping("/{groupId}/members")
     @Operation(
         summary = "Получение списка участников группы",
         description = "Возвращает список всех участников указанной группы",
         responses = [
             ApiResponse(responseCode = "200", description = "Список участников группы", content = [
-                Content(mediaType = "application/json", schema = Schema(implementation = Array<GroupMemberResponse>::class))
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = Array<GroupMemberResponse>::class))
             ]),
             ApiResponse(responseCode = "404", description = "Группа не найдена", content = [])
         ]

@@ -1,5 +1,6 @@
 package io.github.andreparkh.controller
 
+import io.github.andreparkh.config.HttpConstants
 import io.github.andreparkh.dto.ChangeRoleRequest
 import io.github.andreparkh.dto.ResponseUser
 import io.github.andreparkh.dto.UpdateUser
@@ -17,19 +18,19 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/private/users")
-@Tag(name = "Управление пользователями", description = "Операции связанные с управлением пользователями")
+@Tag(name = "Управление пользователями", description = "API для работы с пользователями")
 class UserController (
     private val userService: UserService
 ) {
 
     @GetMapping("/{id}")
     @Operation(
-        summary = "Получить пользователя по ID",
+        summary = "Получение пользователя по ID",
         description = "Возвращает пользователя по его уникальному ID",
         responses = [
-            ApiResponse(responseCode = "200", description = "Пользователь найден",
-                content = [Content(mediaType = "application/json",
-                    schema = Schema(implementation = ResponseUser::class))]),
+            ApiResponse(responseCode = "200", description = "Пользователь найден", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ResponseUser::class))
+            ]),
             ApiResponse(responseCode = "404", description = "Пользователь не найден")
         ]
     )
@@ -43,12 +44,12 @@ class UserController (
 
     @GetMapping()
     @Operation(
-        summary = "Получить всех пользователей",
+        summary = "Получение всех пользователей",
         description = "Возвращает список всех зарегистрированных пользователей",
         responses = [
-            ApiResponse(responseCode = "200", description = "Список пользователей успешно получен",
-                content = [Content(mediaType = "application/json",
-                    schema = Schema(implementation = Array<ResponseUser>::class))]),
+            ApiResponse(responseCode = "200", description = "Список пользователей успешно получен", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = Array<ResponseUser>::class))
+            ]),
             ApiResponse(responseCode = "404", description = "Пользователи не найдены")
         ]
     )
@@ -58,12 +59,12 @@ class UserController (
 
     @PutMapping("/{id}")
     @Operation(
-        summary = "Обновить данные текущего пользователя",
+        summary = "Обновление данных пользователя",
         description = "Позволяет пользователю обновить личные данные",
         responses = [
-            ApiResponse(responseCode = "200", description = "Пользователь успешно обновлен",
-                content = [Content(mediaType = "application/json",
-                    schema = Schema(implementation = ResponseUser::class))]),
+            ApiResponse(responseCode = "200", description = "Данные пользователя успешно обновлены", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ResponseUser::class))
+            ]),
             ApiResponse(responseCode = "400", description = "Некорректные данные запроса или поля имеют недопустимые значения"),
             ApiResponse(responseCode = "401", description = "Пользователь не авторизован")
         ]
@@ -77,13 +78,13 @@ class UserController (
         @Parameter(
             description = "JSON-объект с данными для обновления пользователя",
             required = true,
-            content = [Content(mediaType = "application/json",
-                schema = Schema(implementation = UpdateUser::class)) ]
+            content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = UpdateUser::class))
+            ]
         )
         updateUser: UpdateUser,
 
-        @Parameter(
-            description = "Данные авторизованного пользователя. Используется для получения email текущего пользователя")
+        @Parameter(hidden = true)
         authentication: Authentication
     ): ResponseUser? {
         return userService.updateUser(id, updateUser, authentication.name)
@@ -101,15 +102,14 @@ class UserController (
     )
     fun changeRoleById(
         @PathVariable
-        @Parameter(description = "ID пользователя, чья роль будет изменена")
+        @Parameter(description = "ID пользователя, роль которого нужно изменить")
         id: Long,
 
         @RequestBody
         @Parameter(description = "Новая роль пользователя")
         request: ChangeRoleRequest,
 
-        @Parameter(
-            description = "Данные авторизованного пользователя. Используется для получения email текущего пользователя")
+        @Parameter(hidden = true)
         authentication: Authentication
     ): ResponseEntity<Unit> {
         val success = userService.changeRoleById(id, request.role, authentication.name)
@@ -119,14 +119,22 @@ class UserController (
     }
 
     @DeleteMapping("/{id}")
-    @Operation()
+    @Operation(
+        summary = "Удаление пользователя",
+        description = "Позволяет администратору удалить пользователя по его уникальному идентификатору. " +
+                "Обычные пользователи могут удалять только свой аккаунт",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Пользователь успешно удален"),
+            ApiResponse(responseCode = "403", description = "Доступ запрещен"),
+            ApiResponse(responseCode = "404", description = "Пользователь с указанным ID не найден")
+        ]
+    )
     fun deleteById(
         @PathVariable
-        @Parameter(description = "ID пользователя", required = true)
+        @Parameter(description = "ID пользователя", required = true, example = "1")
         id: Long,
 
-        @Parameter(
-            description = "Данные авторизованного пользователя. Используется для получения email текущего пользователя")
+        @Parameter(hidden = true)
         authentication: Authentication
     ): ResponseEntity<Unit> {
         val deleted = userService.deleteUserById(id, authentication.name)
