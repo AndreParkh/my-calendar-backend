@@ -11,7 +11,7 @@ springdoc:
     version: OPENAPI_3_0
   swagger-ui:
     enabled: true
-    path: /swagger-ui.html
+    path: /swagger-ui/index.html
 
 security:
   jwt:
@@ -19,7 +19,7 @@ security:
     expiration-time: 86400000 #  24 часа
 
 server:
-  port: 5000
+  port: 5002
   address: 0.0.0.0
 ---
 # Настройки для профиля prod

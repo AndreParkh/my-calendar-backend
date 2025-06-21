@@ -14,3 +14,6 @@ object AppRoles {
     const val USER_ROLE = "USER_ROLE"
     const val ADMIN_ROLE = "ADMIN_ROLE"
 }
+object HttpConstants {
+    const val APPLICATION_JSON = "application/json"
+}
