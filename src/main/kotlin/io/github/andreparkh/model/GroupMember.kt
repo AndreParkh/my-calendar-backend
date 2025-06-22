@@ -1,5 +1,6 @@
 package io.github.andreparkh.model
 
+import io.github.andreparkh.dto.group.GroupMemberResponse
 import io.github.andreparkh.enums.GroupMemberRole
 import jakarta.persistence.*
 import org.hibernate.annotations.OnDelete
@@ -26,9 +27,15 @@ data class GroupMember (
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var role: GroupMemberRole? = GroupMemberRole.MEMBER,
+    var role: GroupMemberRole = GroupMemberRole.MEMBER,
 
     @Column(nullable = false)
     val jointedAt: LocalDateTime = LocalDateTime.now()
 ){
+    fun toGroupMembersResponse() = GroupMemberResponse(
+        userId = this.user.id!!,
+        email = this.user.email,
+        role = this.role,
+        joinedAt = this.jointedAt
+    )
 }

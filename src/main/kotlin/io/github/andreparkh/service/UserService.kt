@@ -72,7 +72,7 @@ class UserService(private val userRepository: UserRepository) {
         val isDeleteSelf = currentUser.id == existingUser.id
 
         if (!isAdmin && !isDeleteSelf)
-            throw AccessDeniedException("Недостаточно прав для изменения")
+            throw AccessDeniedException("Недостаточно прав для удаления")
 
         userRepository.deleteById(id)
         return true
