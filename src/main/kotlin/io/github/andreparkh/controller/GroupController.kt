@@ -28,7 +28,8 @@ class GroupController (
             ApiResponse(responseCode = "201", description = "Группа успешно создана", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = GroupResponse::class))
             ]),
-            ApiResponse(responseCode = "400", description = "Некорректные данные запроса", content = [])
+            ApiResponse(responseCode = "400", description = "Некорректные данные запроса", content = []),
+            ApiResponse(responseCode = "404", description = "Пользователь не найден", content = [])
         ]
     )
     fun createGroup(
@@ -103,7 +104,7 @@ class GroupController (
         @Parameter(description = "ID группы", example = "1")
         groupId: Long
     ): ResponseEntity<List<GroupMemberResponse>> {
-        val members = groupService.listMembers(groupId)
+        val members = groupService.getAllGroupMembersByGroupId(groupId)
         return ResponseEntity.ok(members)
     }
 

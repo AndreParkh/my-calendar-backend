@@ -1,9 +1,9 @@
 package io.github.andreparkh.controller
 
 import io.github.andreparkh.config.HttpConstants
-import io.github.andreparkh.dto.ChangeRoleRequest
-import io.github.andreparkh.dto.ResponseUser
-import io.github.andreparkh.dto.UpdateUser
+import io.github.andreparkh.dto.user.ChangeRoleRequest
+import io.github.andreparkh.dto.user.UserResponse
+import io.github.andreparkh.dto.user.UpdateUser
 import io.github.andreparkh.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -29,8 +29,9 @@ class UserController (
         description = "Возвращает пользователя по его уникальному ID",
         responses = [
             ApiResponse(responseCode = "200", description = "Пользователь найден", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ResponseUser::class))
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = UserResponse::class))
             ]),
+            ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
             ApiResponse(responseCode = "404", description = "Пользователь не найден")
         ]
     )
@@ -38,7 +39,7 @@ class UserController (
         @PathVariable
         @Parameter(description = "ID пользователя", required = true)
         id: Long
-    ): ResponseUser? {
+    ): UserResponse? {
         return userService.getUserById(id)
     }
 
@@ -48,12 +49,12 @@ class UserController (
         description = "Возвращает список всех зарегистрированных пользователей",
         responses = [
             ApiResponse(responseCode = "200", description = "Список пользователей успешно получен", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = Array<ResponseUser>::class))
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = Array<UserResponse>::class))
             ]),
-            ApiResponse(responseCode = "404", description = "Пользователи не найдены")
+            ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
         ]
     )
-    fun getAllUsers(): List<ResponseUser> {
+    fun getAllUsers(): List<UserResponse> {
         return userService.getAllUsers()
     }
 
@@ -63,10 +64,11 @@ class UserController (
         description = "Позволяет пользователю обновить личные данные",
         responses = [
             ApiResponse(responseCode = "200", description = "Данные пользователя успешно обновлены", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ResponseUser::class))
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = UserResponse::class))
             ]),
             ApiResponse(responseCode = "400", description = "Некорректные данные запроса или поля имеют недопустимые значения"),
-            ApiResponse(responseCode = "401", description = "Пользователь не авторизован")
+            ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
+            ApiResponse(responseCode = "403", description = "Недостаточно прав для изменения"),
         ]
     )
     fun updateUser(
@@ -86,7 +88,7 @@ class UserController (
 
         @Parameter(hidden = true)
         authentication: Authentication
-    ): ResponseUser? {
+    ): UserResponse? {
         return userService.updateUser(id, updateUser, authentication.name)
     }
 
@@ -96,7 +98,8 @@ class UserController (
         description = "Позволяет администратору изменить роль пользователя по его ID",
         responses = [
             ApiResponse(responseCode = "200", description = "Роль успешно изменена"),
-            ApiResponse(responseCode = "400", description = "Ошибка запроса: неверная роль или пользователь не найден"),
+            ApiResponse(responseCode = "400", description = "Ошибка запроса: неверная роль"),
+            ApiResponse(responseCode = "403", description = "Недостаточно прав для изменения"),
             ApiResponse(responseCode = "404", description = "Пользователь с указанным ID не найден")
         ]
     )

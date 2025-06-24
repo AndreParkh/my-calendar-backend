@@ -2,7 +2,7 @@ package io.github.andreparkh
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.andreparkh.config.JwtConstants
-import io.github.andreparkh.dto.RegisterRequest
+import io.github.andreparkh.dto.auth.RegisterRequest
 import io.github.andreparkh.dto.group.CreateGroupRequest
 import io.github.andreparkh.dto.group.JoinGroupRequest
 import org.junit.jupiter.api.BeforeEach

@@ -2,8 +2,8 @@ package io.github.andreparkh
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.andreparkh.config.JwtConstants
-import io.github.andreparkh.dto.RegisterRequest
-import io.github.andreparkh.dto.UpdateUser
+import io.github.andreparkh.dto.auth.RegisterRequest
+import io.github.andreparkh.dto.user.UpdateUser
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc

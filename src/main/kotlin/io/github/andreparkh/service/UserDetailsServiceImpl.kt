@@ -22,6 +22,4 @@ class UserDetailsServiceImpl(
             .authorities(SimpleGrantedAuthority(user.role))
             .build()
     }
-
-
 }

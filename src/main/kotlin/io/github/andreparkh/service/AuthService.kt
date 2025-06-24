@@ -1,8 +1,8 @@
 package io.github.andreparkh.service
 
-import io.github.andreparkh.dto.AuthResponse
-import io.github.andreparkh.dto.LoginRequest
-import io.github.andreparkh.dto.RegisterRequest
+import io.github.andreparkh.dto.auth.AuthResponse
+import io.github.andreparkh.dto.auth.LoginRequest
+import io.github.andreparkh.dto.auth.RegisterRequest
 import io.github.andreparkh.model.User
 import io.github.andreparkh.repository.UserRepository
 import org.springframework.security.authentication.AuthenticationManager
@@ -21,12 +21,17 @@ class AuthService(
 ) {
 
     fun register(request: RegisterRequest): AuthResponse {
+
         val user = User(
             firstName = request.firstName,
             lastName = request.lastName,
             email = request.email,
             passwordHash = passwordEncoder.encode(request.password)
         )
+
+        if (userRepository.existsByEmail(request.email)) {
+            throw IllegalArgumentException("Пользователь с таким email уже существует")
+        }
 
         val savedUser = userRepository.save(user)
         userRepository.flush()

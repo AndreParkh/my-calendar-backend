@@ -1,7 +1,7 @@
 package io.github.andreparkh.model
 
 import io.github.andreparkh.config.AppRoles
-import io.github.andreparkh.dto.ResponseUser
+import io.github.andreparkh.dto.user.UserResponse
 import jakarta.persistence.*
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -57,7 +57,7 @@ data class User (
 
     fun isAdmin(): Boolean = this.role == AppRoles.ADMIN_ROLE
 
-    fun toResponseUser() = ResponseUser(
+    fun toResponseUser() = UserResponse(
         id = this.id,
         email = this.email,
         firstName = this.firstName,

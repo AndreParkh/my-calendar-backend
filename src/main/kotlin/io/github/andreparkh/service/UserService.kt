@@ -1,38 +1,51 @@
 package io.github.andreparkh.service
 
 import io.github.andreparkh.config.AppRoles
-import io.github.andreparkh.dto.ResponseUser
-import io.github.andreparkh.dto.UpdateUser
+import io.github.andreparkh.dto.user.UserResponse
+import io.github.andreparkh.dto.user.UpdateUser
 import io.github.andreparkh.model.User
 import io.github.andreparkh.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.security.access.AccessDeniedException
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 
 @Service
 class UserService(private val userRepository: UserRepository) {
 
-    fun createUser(
-                    email: String,
-                    passwordHash: String,
-                    firstName: String,
-                    lastName: String): ResponseUser {
+//    fun createUser(
+//            email: String,
+//            passwordHash: String,
+//            firstName: String,
+//            lastName: String
+//    ): ResponseUser {
+//
+//        if (userRepository.existsByEmail(email)) {
+//            throw IllegalArgumentException("Пользователь с таким email уже существует")
+//        }
+//
+//        val user = User(
+//            email = email,
+//            passwordHash = passwordHash,
+//            firstName = firstName,
+//            lastName = lastName)
+//
+//        val savedUser = userRepository.save(user)
+//        return savedUser.toResponseUser()
+//    }
 
-        val user = User(
-            email = email,
-            passwordHash = passwordHash,
-            firstName = firstName,
-            lastName = lastName)
+    fun getUserById(id: Long): UserResponse {
+        val foundUser = userRepository.findById(id)
+            .orElseThrow { EntityNotFoundException("Пользователь с ID $id не найден") }
 
-        val savedUser = userRepository.save(user)
-        return savedUser.toResponseUser()
+        return foundUser.toResponseUser()
     }
 
-    fun getUserById(id: Long): ResponseUser? {
-        return userRepository.findById(id).orElse(null)?.toResponseUser()
+    fun getAllUsers(): List<UserResponse> {
+        return userRepository.findAll().map{ it.toResponseUser() }
     }
 
-    fun updateUser(id: Long, updateUser: UpdateUser, currentUserEmail: String): ResponseUser? {
+    fun updateUser(id: Long, updateUser: UpdateUser, currentUserEmail: String): UserResponse {
 
         val existingUser = userRepository.findById(id)
             .orElseThrow{ EntityNotFoundException("Пользователь с ID $id не найден") }
@@ -57,8 +70,22 @@ class UserService(private val userRepository: UserRepository) {
         return userRepository.save(existingUser).toResponseUser()
     }
 
-    fun getAllUsers(): List<ResponseUser> {
-        return userRepository.findAll().map{ it.toResponseUser() }
+    fun changeRoleById(id: Long, newRole: String, currentUserEmail: String): Boolean {
+        if (newRole !in listOf(AppRoles.USER_ROLE, AppRoles.ADMIN_ROLE))
+            throw IllegalArgumentException("Неккоректная роль: $newRole")
+
+        val existingUser = userRepository.findById(id)
+            .orElseThrow{ EntityNotFoundException("Пользователь с ID $id не найден") }
+
+        val currentUser = userRepository.findByEmail(currentUserEmail)
+            .orElseThrow{ EntityNotFoundException("Текущий пользователь не найден") }
+
+        if (!currentUser.isAdmin())
+            throw AccessDeniedException("Недостаточно прав для изменения")
+
+        existingUser.role = newRole
+        userRepository.save(existingUser)
+        return true
     }
 
     fun deleteUserById(id: Long, currentUserEmail: String): Boolean {
@@ -78,22 +105,13 @@ class UserService(private val userRepository: UserRepository) {
         return true
     }
 
-    fun changeRoleById(id: Long, newRole: String, currentUserEmail: String): Boolean {
-        if (newRole !in listOf(AppRoles.USER_ROLE, AppRoles.ADMIN_ROLE))
-            throw IllegalArgumentException("Неккоректная роль: $newRole")
+    fun getCurrentUser(): User {
 
-        val existingUser = userRepository.findById(id)
-            .orElseThrow{ EntityNotFoundException("Пользователь с ID $id не найден") }
-
-        val currentUser = userRepository.findByEmail(currentUserEmail)
+        val authUserEmail = SecurityContextHolder.getContext().authentication.name
+        val currentUser = userRepository.findByEmail(authUserEmail)
             .orElseThrow{ EntityNotFoundException("Текущий пользователь не найден") }
 
-        if (!currentUser.isAdmin())
-            throw AccessDeniedException("Недостаточно прав для изменения")
-
-        existingUser.role = newRole
-        userRepository.save(existingUser)
-        return true
+        return currentUser
     }
 
 }

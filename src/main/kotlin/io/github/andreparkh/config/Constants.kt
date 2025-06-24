@@ -17,3 +17,9 @@ object AppRoles {
 object HttpConstants {
     const val APPLICATION_JSON = "application/json"
 }
+
+object EventParticipantStatus {
+    const val ACCEPTED = "ACCEPTED"
+    const val REJECTED = "REJECTED"
+    const val PENDING = "PENDING"
+}
