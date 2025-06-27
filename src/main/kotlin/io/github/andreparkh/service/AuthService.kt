@@ -13,30 +13,17 @@ import org.springframework.stereotype.Service
 
 @Service
 class AuthService(
-    private val userRepository: UserRepository,
     private val jwtService: JwtService,
-    private val passwordEncoder: PasswordEncoder,
     private val authenticationManager: AuthenticationManager,
-    private val userDetailsService: UserDetailsService
+    private val userDetailsService: UserDetailsService,
+    private val userService: UserService
 ) {
 
     fun register(request: RegisterRequest): AuthResponse {
 
-        val user = User(
-            firstName = request.firstName,
-            lastName = request.lastName,
-            email = request.email,
-            passwordHash = passwordEncoder.encode(request.password)
-        )
+        val user = userService.createUser(request)
 
-        if (userRepository.existsByEmail(request.email)) {
-            throw IllegalArgumentException("Пользователь с таким email уже существует")
-        }
-
-        val savedUser = userRepository.save(user)
-        userRepository.flush()
-
-        return AuthResponse(jwtService.generateToken(savedUser.email))
+        return AuthResponse(jwtService.generateToken(user.email))
     }
 
     fun login(request: LoginRequest): AuthResponse {

@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.transaction.annotation.Transactional
@@ -34,17 +35,10 @@ class UserControllerTest {
     @Test
     fun `should get all users`() {
 
-        mockMvc.perform(
-            post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerRequest1))
-        ).andExpect(status().isOk)
+        registerUser(registerRequest1)
+            .andExpect(status().isOk)
 
-        val resultAction = mockMvc.perform(
-            post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerRequest2))
-        )
+        val resultAction = registerUser(registerRequest2)
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.token").isNotEmpty)
 
@@ -72,14 +66,8 @@ class UserControllerTest {
     @Test
     fun `should get user by ID`() {
 
-        val createResponse = mockMvc.perform(
-            post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerRequest1))
-        )
+        val createResponse = registerUser(registerRequest1)
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.token").isNotEmpty)
-            .andDo { print( it ) }
             .andReturn()
 
         val token = createResponse
@@ -117,6 +105,16 @@ class UserControllerTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.firstName").value(registerRequest1.firstName))
             .andExpect(jsonPath("$.lastName").value(registerRequest1.lastName))
+    }
+
+    @Test
+    fun `should not get user by ID`() {
+        mockMvc.perform(
+            get("/api/private/users")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isForbidden)
     }
 
     @Test
@@ -183,5 +181,14 @@ class UserControllerTest {
             .andExpect(jsonPath("$.workEndTime").value("18:00:00"))
             .andExpect(jsonPath("$.vacationStart").value("2025-01-01"))
             .andExpect(jsonPath("$.vacationEnd").value("2025-01-14"))
+    }
+
+    private fun registerUser(request: RegisterRequest): ResultActions {
+        val createResponse = mockMvc.perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+        return createResponse
     }
 }

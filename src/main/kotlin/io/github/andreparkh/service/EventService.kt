@@ -51,7 +51,7 @@ class EventService(
         val currentUser = userService.getCurrentUser()
         val event = getEventEntity(eventId)
 
-        val isParticipant = participantRepository.existsByEventIdAndUserId(eventId, currentUser.id!!)
+        val isParticipant = participantRepository.existsByEventIdAndUserId(eventId, currentUser.toUserResponse().id)
 
         if (!currentUser.isAdmin() && !isParticipant)
             throw AccessDeniedException("Доступ запрещен")
@@ -64,7 +64,7 @@ class EventService(
         val currentUser = userService.getCurrentUser()
         getEventEntity(eventId)
 
-        val isParticipant = participantRepository.existsByEventIdAndUserId(eventId, currentUser.id!!)
+        val isParticipant = participantRepository.existsByEventIdAndUserId(eventId, currentUser.toUserResponse().id)
 
         if (!currentUser.isAdmin() && !isParticipant)
             throw AccessDeniedException("Доступ запрещен")

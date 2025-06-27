@@ -5,12 +5,12 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 
 data class UserResponse (
-    val id: Long?,
+    val id: Long,
     val email: String,
     val firstName: String,
     val lastName: String,
-    var role: String?,
-    val avatarUrl: String?,
+    var role: String,
+    val avatarUrl: String,
     val workStartTime: LocalTime?,
     val workEndTime: LocalTime?,
     val vacationStart: LocalDate?,

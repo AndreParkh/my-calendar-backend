@@ -25,7 +25,6 @@ data class EventParticipant (
     @JoinColumn(name = "user_id", nullable = false)
     var user: User,
 
-//    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var status: String? = EventParticipantStatus.PENDING,
 

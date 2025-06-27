@@ -1,11 +1,7 @@
 package io.github.andreparkh.controller
 
 import io.github.andreparkh.config.HttpConstants
-import io.github.andreparkh.dto.event.EventRequest
-import io.github.andreparkh.dto.event.EventResponse
-import io.github.andreparkh.dto.event.JoinEventRequest
-import io.github.andreparkh.dto.event.ParticipantResponse
-import io.github.andreparkh.dto.event.UpdateParticipationStatusRequest
+import io.github.andreparkh.dto.event.*
 import io.github.andreparkh.service.EventService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -23,7 +19,6 @@ import java.net.URI
 class EventController(
     private val eventService: EventService
 ) {
-    //Создание события
     @PostMapping
     @Operation(
         summary = "Создание нового события",
@@ -44,7 +39,7 @@ class EventController(
         return ResponseEntity.created(URI("/api/private/events/${event.id}")).body(event)
     }
 
-    //Получение события по ID
+
     @GetMapping("/{eventId}")
     @Operation(
         summary = "Получение информации о событии",
@@ -66,7 +61,7 @@ class EventController(
         return ResponseEntity.ok(event)
     }
 
-    // Получение всех участников события
+
     @GetMapping("/{id}/participants")
     @Operation(
         summary = "Получение списка участников события",
@@ -88,7 +83,7 @@ class EventController(
         return ResponseEntity.ok(participants)
     }
 
-    // Добавление участника события
+
     @PostMapping("/{eventId}/join")
     @Operation(
         summary = "Приглашение к участию в событие",
@@ -114,7 +109,7 @@ class EventController(
         return ResponseEntity.ok(participants)
     }
 
-    // Обновление статуса участия
+
     @PutMapping("/{eventId}/update-status")
     @Operation(
         summary = "Обновление статуса участия",

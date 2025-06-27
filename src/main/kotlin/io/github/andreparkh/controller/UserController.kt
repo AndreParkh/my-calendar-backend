@@ -39,8 +39,8 @@ class UserController (
         @PathVariable
         @Parameter(description = "ID пользователя", required = true)
         id: Long
-    ): UserResponse? {
-        return userService.getUserById(id)
+    ): ResponseEntity<Any> {
+            return ResponseEntity.ok(userService.getUserById(id))
     }
 
     @GetMapping()
@@ -54,8 +54,8 @@ class UserController (
             ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
         ]
     )
-    fun getAllUsers(): List<UserResponse> {
-        return userService.getAllUsers()
+    fun getAllUsers(): ResponseEntity<Any> {
+        return ResponseEntity.ok(userService.getAllUsers())
     }
 
     @PutMapping("/{id}")
@@ -69,6 +69,7 @@ class UserController (
             ApiResponse(responseCode = "400", description = "Некорректные данные запроса или поля имеют недопустимые значения"),
             ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
             ApiResponse(responseCode = "403", description = "Недостаточно прав для изменения"),
+            ApiResponse(responseCode = "404", description = "Пользователь не авторизован"),
         ]
     )
     fun updateUser(
@@ -84,12 +85,9 @@ class UserController (
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = UpdateUser::class))
             ]
         )
-        updateUser: UpdateUser,
-
-        @Parameter(hidden = true)
-        authentication: Authentication
-    ): UserResponse? {
-        return userService.updateUser(id, updateUser, authentication.name)
+        updateUser: UpdateUser
+    ): ResponseEntity<Any> {
+        return ResponseEntity.ok(userService.updateUser(id, updateUser))
     }
 
     @PutMapping("/{id}/role")
@@ -100,7 +98,7 @@ class UserController (
             ApiResponse(responseCode = "200", description = "Роль успешно изменена"),
             ApiResponse(responseCode = "400", description = "Ошибка запроса: неверная роль"),
             ApiResponse(responseCode = "403", description = "Недостаточно прав для изменения"),
-            ApiResponse(responseCode = "404", description = "Пользователь с указанным ID не найден")
+            ApiResponse(responseCode = "404", description = "Пользователь не найден")
         ]
     )
     fun changeRoleById(
@@ -111,11 +109,8 @@ class UserController (
         @RequestBody
         @Parameter(description = "Новая роль пользователя")
         request: ChangeRoleRequest,
-
-        @Parameter(hidden = true)
-        authentication: Authentication
     ): ResponseEntity<Unit> {
-        val success = userService.changeRoleById(id, request.role, authentication.name)
+        val success = userService.changeRoleById(id, request.role)
 
         return if (success) ResponseEntity.ok().build()
         else ResponseEntity.badRequest().build()
@@ -136,11 +131,8 @@ class UserController (
         @PathVariable
         @Parameter(description = "ID пользователя", required = true, example = "1")
         id: Long,
-
-        @Parameter(hidden = true)
-        authentication: Authentication
     ): ResponseEntity<Unit> {
-        val deleted = userService.deleteUserById(id, authentication.name)
+        val deleted = userService.deleteUserById(id)
 
         return if (deleted) ResponseEntity.ok().build()
         else ResponseEntity.notFound().build()

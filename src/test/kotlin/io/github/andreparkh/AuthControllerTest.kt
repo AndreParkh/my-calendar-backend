@@ -33,7 +33,6 @@ class AuthControllerTest {
 
     @Test
     fun `should register user successfully`() {
-
         mockMvc.perform(
             post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -44,7 +43,22 @@ class AuthControllerTest {
             .andExpect(jsonPath("$.token").isNotEmpty)
     }
 
+    @Test
+    fun `should don't register user`() {
+        mockMvc.perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerUser))
+        )
+            .andExpect(status().isOk)
 
+        mockMvc.perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerUser))
+        )
+            .andExpect(status().isBadRequest)
+    }
 
     @Test
     fun `should login user successfully`() {
@@ -68,5 +82,20 @@ class AuthControllerTest {
             .andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.token").isNotEmpty)
+    }
+
+    @Test
+    fun `should don't login user`() {
+        val loginRequest = LoginRequest(
+            email = registerUser.email,
+            password = registerUser.password
+        )
+
+        mockMvc.perform(
+            post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest))
+        )
+            .andExpect(status().isBadRequest)
     }
 }
