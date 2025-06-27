@@ -1,6 +1,7 @@
 package io.github.andreparkh.model
 
-import io.github.andreparkh.enums.EventParticipantStatus
+import io.github.andreparkh.config.EventParticipantStatus
+import io.github.andreparkh.dto.event.ParticipantResponse
 import jakarta.persistence.*
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
@@ -9,7 +10,7 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "event_participants")
-data class EventParticipants (
+data class EventParticipant (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -24,11 +25,24 @@ data class EventParticipants (
     @JoinColumn(name = "user_id", nullable = false)
     var user: User,
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var status: EventParticipantStatus? = EventParticipantStatus.PENDING,
+    var status: String? = EventParticipantStatus.PENDING,
 
     @Column
-    val responseAt: LocalDateTime? = null,
-){
+    var responseAt: LocalDateTime? = null,
+) {
+
+    fun updateResponse() {
+        this.responseAt = LocalDateTime.now()
+    }
+
+    fun toParticipantResponse() = ParticipantResponse(
+        id = this.id,
+        userId = this.user.id,
+        firstName = this.user.firstName,
+        lastName = this.user.lastName,
+        eventId = this.event.id,
+        status = this.status,
+        responseAt = this.responseAt
+    )
 }

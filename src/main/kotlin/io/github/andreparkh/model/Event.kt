@@ -1,5 +1,6 @@
 package io.github.andreparkh.model
 
+import io.github.andreparkh.dto.event.EventResponse
 import jakarta.persistence.*
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
@@ -38,4 +39,15 @@ data class Event(
     @Column(nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now()
 ) {
+    fun toEventResponse() = EventResponse(
+        id = this.id,
+        title = this.title,
+        description = this.description,
+        startTime = this.startTime,
+        endTime = this.endTime,
+        createdById = this.createdBy.id,
+        isRepeating = this.isRepeatable,
+        repeateRule = this.repeateRule,
+        createdAt = this. createdAt
+    )
 }

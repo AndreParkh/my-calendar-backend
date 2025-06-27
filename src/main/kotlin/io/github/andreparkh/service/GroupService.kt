@@ -40,7 +40,8 @@ class GroupService(
     }
 
     fun getGroupById(groupId: Long): GroupResponse {
-        val group = groupRepository.findById(groupId).orElseThrow { EntityNotFoundException("Группа не найдена") }
+        val group = groupRepository.findById(groupId)
+            .orElseThrow { EntityNotFoundException("Группа с ID $groupId не найдена") }
         return group.toGroupResponse()
     }
 
@@ -51,10 +52,10 @@ class GroupService(
         val currentUser = userRepository.findByEmail(currentUserEmail)
             .orElseThrow{ EntityNotFoundException("Текущий пользователь не найден") }
 
-        if (!group.isTokenValid()) throw RuntimeException("Токен недействитен")
+        if (!group.isTokenValid()) throw IllegalArgumentException("Токен недействитен")
 
         if (groupMemberRepository.existsByUserIdAndGroupId(currentUser.id!!, group.id!!))
-            throw RuntimeException("Пользователь уже состоит в группе")
+            throw IllegalArgumentException("Пользователь уже состоит в группе")
 
         val member = GroupMember(
             user = currentUser,
@@ -66,7 +67,9 @@ class GroupService(
         return group.toGroupResponse()
     }
 
-    fun listMembers(groupId: Long): List<GroupMemberResponse> {
+    fun getAllGroupMembersByGroupId(groupId: Long): List<GroupMemberResponse> {
+
+        getGroupById(groupId)
         val members = groupMemberRepository.findByGroupId(groupId)
         return members.map { member -> member.toGroupMembersResponse() }
     }

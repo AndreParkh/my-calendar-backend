@@ -1,9 +1,8 @@
 package io.github.andreparkh.controller
 
-import io.github.andreparkh.dto.AuthResponse
-import io.github.andreparkh.dto.LoginRequest
-import io.github.andreparkh.dto.RegisterRequest
-import io.github.andreparkh.model.User
+import io.github.andreparkh.dto.auth.AuthResponse
+import io.github.andreparkh.dto.auth.LoginRequest
+import io.github.andreparkh.dto.auth.RegisterRequest
 import io.github.andreparkh.service.AuthService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -11,6 +10,8 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.http.ResponseEntity
+import org.springframework.security.core.AuthenticationException
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -25,18 +26,19 @@ class AuthController(
         summary = "Регистрация нового пользователя",
         description = "Создание нового пользователя в системе",
         responses = [
-            ApiResponse(responseCode = "200", description = "Пользователь создан",
+            ApiResponse(responseCode = "200", description = "Пользователь успешно создан",
                 content = [Content(mediaType = "application/json",
-                    schema = Schema(implementation = User::class))]),
-            ApiResponse(responseCode = "404", description = "Некорректные данные")
+                    schema = Schema(implementation = AuthResponse::class))]),
+            ApiResponse(responseCode = "400", description = "Пользователь с таким email уже существует"),
         ]
     )
     fun register(
         @RequestBody
         @Parameter(description = "Данные пользователя", required = true)
         request: RegisterRequest
-    ): AuthResponse =
-        authService.register(request)
+    ): ResponseEntity<Any> {
+        return ResponseEntity.ok(authService.register(request))
+    }
 
     @PostMapping("/login")
     @Operation(
@@ -47,10 +49,17 @@ class AuthController(
                 content = [Content(mediaType = "application/json",
                     schema = Schema(implementation = AuthResponse::class))]),
             ApiResponse(responseCode = "400", description = "Неверные учетные данные"),
-            ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
-
         ]
     )
-    fun login(@RequestBody request: LoginRequest): AuthResponse =
-        authService.login(request)
+    fun login(
+        @RequestBody
+        @Parameter(description = "Учетные данные пользователя", required = true)
+        request: LoginRequest
+    ): ResponseEntity<Any> {
+        return try{
+            return ResponseEntity.ok(authService.login(request))
+        } catch (e: AuthenticationException) {
+            ResponseEntity.badRequest().build()
+        }
+    }
 }

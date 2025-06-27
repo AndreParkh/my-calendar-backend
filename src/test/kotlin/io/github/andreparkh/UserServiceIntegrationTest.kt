@@ -1,5 +1,6 @@
 package io.github.andreparkh
 
+import io.github.andreparkh.dto.auth.RegisterRequest
 import io.github.andreparkh.repository.UserRepository
 import io.github.andreparkh.service.UserService
 import org.junit.jupiter.api.AfterEach
@@ -25,12 +26,18 @@ class UserServiceIntegrationTest {
     }
 
     @Test
-    fun ShouldCreateAndRetrieveUserViaService() {
-        val createdUser = userService.createUser("test@example.com", "password", "testFirstName", "testLastName")
-        val retrievedUser = userService.getUserById(createdUser.id!!)
+    fun `Should create and retrieve user via service`() {
+        val request = RegisterRequest(
+            email = "test@example.com",
+            password = "password",
+            firstName = "testFirstName",
+            lastName = "testLastName"
+        )
+        val createdUser = userService.createUser(request)
+        val retrievedUser = userService.getUserById(createdUser.id)
 
         Assertions.assertNotNull(retrievedUser)
-        Assertions.assertEquals("test@example.com", retrievedUser?.email)
+        Assertions.assertEquals(request.email, retrievedUser.email)
     }
 
 }

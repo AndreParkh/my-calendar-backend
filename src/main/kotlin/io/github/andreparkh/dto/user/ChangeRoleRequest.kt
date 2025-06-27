@@ -1,4 +1,4 @@
-package io.github.andreparkh.dto
+package io.github.andreparkh.dto.user
 
 data class ChangeRoleRequest (
     val role: String

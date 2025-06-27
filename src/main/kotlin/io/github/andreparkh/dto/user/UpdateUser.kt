@@ -1,4 +1,4 @@
-package io.github.andreparkh.dto
+package io.github.andreparkh.dto.user
 
 import java.time.LocalDate
 import java.time.LocalTime
