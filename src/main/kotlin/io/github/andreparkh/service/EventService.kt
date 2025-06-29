@@ -1,6 +1,8 @@
 package io.github.andreparkh.service
 
+import io.github.andreparkh.config.EventErrorMessages
 import io.github.andreparkh.config.EventParticipantStatus
+import io.github.andreparkh.config.UserErrorMessages
 import io.github.andreparkh.dto.event.EventRequest
 import io.github.andreparkh.dto.event.EventResponse
 import io.github.andreparkh.dto.event.ParticipantResponse
@@ -31,8 +33,8 @@ class EventService(
             startTime = eventRequest.startTime,
             endTime = eventRequest.endTime,
             createdBy = currentUser,
-            isRepeatable = eventRequest.isRepeatable,
-            repeateRule = eventRequest.repeateRule
+            isRepeatable = eventRequest.isRepeatable ?: false,
+            repeatRule = eventRequest.repeatRule ?: ""
         )
 
         val participant = EventParticipant(
@@ -51,10 +53,10 @@ class EventService(
         val currentUser = userService.getCurrentUser()
         val event = getEventEntity(eventId)
 
-        val isParticipant = participantRepository.existsByEventIdAndUserId(eventId, currentUser.toUserResponse().id)
+        val isParticipant = participantRepository.existsByEventIdAndUserId(eventId, currentUser.getId())
 
         if (!currentUser.isAdmin() && !isParticipant)
-            throw AccessDeniedException("Доступ запрещен")
+            throw AccessDeniedException(EventErrorMessages.ACCESS_DENIED)
 
         return event.toEventResponse()
     }
@@ -64,10 +66,10 @@ class EventService(
         val currentUser = userService.getCurrentUser()
         getEventEntity(eventId)
 
-        val isParticipant = participantRepository.existsByEventIdAndUserId(eventId, currentUser.toUserResponse().id)
+        val isParticipant = participantRepository.existsByEventIdAndUserId(eventId, currentUser.getId())
 
         if (!currentUser.isAdmin() && !isParticipant)
-            throw AccessDeniedException("Доступ запрещен")
+            throw AccessDeniedException(EventErrorMessages.ACCESS_DENIED)
 
         val participants = participantRepository.findByEventId(eventId)
 
@@ -78,10 +80,10 @@ class EventService(
         val event = getEventEntity(eventId)
 
         val user = userRepository.findById(userId)
-            .orElseThrow{ EntityNotFoundException("Пользователь с Id $userId не найден") }
+            .orElseThrow{ EntityNotFoundException(String.format(UserErrorMessages.NOT_FOUND_BY_ID, userId)) }
 
         if (participantRepository.existsByEventIdAndUserId(eventId, userId))
-            throw IllegalArgumentException("Пользователь уже участвует в событии")
+            throw IllegalArgumentException(EventErrorMessages.USER_ALREADY_PARTICIPANTS)
 
         val participant = EventParticipant(
             event = event,
@@ -96,15 +98,15 @@ class EventService(
         val currentUser = userService.getCurrentUser()
 
         if (request.newStatus !in listOf(EventParticipantStatus.ACCEPTED, EventParticipantStatus.REJECTED))
-            throw IllegalArgumentException("Некорректный статус: ${request.newStatus}")
+            throw IllegalArgumentException(String.format(EventErrorMessages.INVALID_STATUS, request.newStatus))
 
         val existingParticipant = participantRepository.findByEventIdAndUserId(eventId, request.participantId)
-            .orElseThrow { IllegalArgumentException("Пользователь не участвует в событии") }
+            .orElseThrow { IllegalArgumentException(String.format(EventErrorMessages.USER_ALREADY_PARTICIPANTS)) }
 
-        val ownParticipation = currentUser.id == request.participantId
+        val ownParticipation = currentUser.getId() == request.participantId
 
         if (!currentUser.isAdmin() && !ownParticipation)
-            throw AccessDeniedException("Недостаточно прав для изменения")
+            throw AccessDeniedException(EventErrorMessages.ACCESS_DENIED)
 
         existingParticipant.status = request.newStatus
         existingParticipant.updateResponse()
@@ -115,7 +117,7 @@ class EventService(
 
     private fun getEventEntity(id: Long): Event {
         val event = eventRepository.findById(id)
-            .orElseThrow { EntityNotFoundException("Событие с ID $id не найдено") }
+            .orElseThrow { EntityNotFoundException(String.format(EventErrorMessages.NOT_FOUND_BY_ID, id)) }
 
         return event
     }

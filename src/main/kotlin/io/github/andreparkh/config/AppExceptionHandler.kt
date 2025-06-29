@@ -1,5 +1,6 @@
 package io.github.andreparkh.config
 
+import io.github.andreparkh.dto.ErrorResponse
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.MalformedJwtException
@@ -21,8 +22,8 @@ class AppExceptionHandler {
     @ExceptionHandler(EntityNotFoundException::class)
     fun handleEntityNotFoundException(ex: EntityNotFoundException): ResponseEntity<ErrorResponse> {
         return ResponseEntity
-            .badRequest()
-            .body(ErrorResponse(message = ex.message ?: "Entity Not Found"))
+            .notFound()
+            .build()
     }
 
     @ExceptionHandler(JwtException::class)
@@ -40,8 +41,4 @@ class AppExceptionHandler {
                 .body(errorResponse)
         }
     }
-
-    data class ErrorResponse(
-        val message: String
-    )
 }

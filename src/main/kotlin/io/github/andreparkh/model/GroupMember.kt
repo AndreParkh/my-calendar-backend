@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 data class GroupMember (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
+    val id: Long? = null,
 
     @OnDelete(action = OnDeleteAction.CASCADE)
     @ManyToOne
@@ -32,8 +32,13 @@ data class GroupMember (
     @Column(nullable = false)
     val jointedAt: LocalDateTime = LocalDateTime.now()
 ){
+    fun getId(): Long {
+        require(this.id != null) { "Group member ID must not be null" }
+        return this.id
+    }
+
     fun toGroupMembersResponse() = GroupMemberResponse(
-        userId = this.user.id!!,
+        userId = this.user.getId(),
         email = this.user.email,
         role = this.role,
         joinedAt = this.jointedAt

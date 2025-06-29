@@ -108,7 +108,7 @@ class UserControllerTest {
     }
 
     @Test
-    fun `should not get user by ID`() {
+    fun `should forbidden to get user by ID`() {
         mockMvc.perform(
             get("/api/private/users")
                 .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $")

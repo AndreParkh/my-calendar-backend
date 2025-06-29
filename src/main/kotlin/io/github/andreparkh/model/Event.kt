@@ -17,7 +17,7 @@ data class Event(
     var title: String,
 
     @Column
-    var description: String? = null,
+    var description: String = "",
 
     @Column(nullable = false)
     var startTime: LocalDateTime,
@@ -31,23 +31,28 @@ data class Event(
     var createdBy: User,
 
     @Column(nullable = false)
-    var isRepeatable: Boolean? = false,
+    var isRepeatable: Boolean = false,
 
     @Column
-    var repeateRule: String? = null,
+    var repeatRule: String = "",
 
     @Column(nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now()
 ) {
+    fun getId(): Long {
+        require(this.id != null) { "Event ID must not be null" }
+        return this.id
+    }
+
     fun toEventResponse() = EventResponse(
-        id = this.id,
+        id = this.getId(),
         title = this.title,
         description = this.description,
         startTime = this.startTime,
         endTime = this.endTime,
-        createdById = this.createdBy.id,
+        createdById = this.createdBy.getId(),
         isRepeating = this.isRepeatable,
-        repeateRule = this.repeateRule,
+        repeatRule = this.repeatRule,
         createdAt = this. createdAt
     )
 }

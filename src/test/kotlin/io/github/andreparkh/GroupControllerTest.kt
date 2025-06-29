@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.transaction.annotation.Transactional
@@ -56,28 +57,21 @@ class GroupControllerTest {
 
     @Test
     fun `should create group`() {
-
-        println(token1)
-        println(token2)
-        mockMvc.perform(
-            post("/api/private/groups")
-                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(createGroupRequest))
-        )
+        createGroup(createGroupRequest, token1)
             .andExpect(status().isCreated)
             .andExpect(jsonPath("$.name").value(createGroupRequest.name))
     }
 
     @Test
+    fun `should not create group`() {
+        createGroup(createGroupRequest, "invalidToken")
+            .andExpect(status().isForbidden)
+    }
+
+    @Test
     fun `should get group by ID`() {
         // Шаг 1: создаем группу
-        val result = mockMvc.perform(
-            post("/api/private/groups")
-                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(createGroupRequest))
-        )
+        val result = createGroup(createGroupRequest, token1)
             .andExpect(status().isCreated)
             .andReturn()
 
@@ -85,24 +79,31 @@ class GroupControllerTest {
         val groupId = response.get("id").asLong()
 
         // Шаг 2: получаем по ID
-        mockMvc.perform(
-            get("/api/private/groups/$groupId")
-                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token1")
-                .contentType(MediaType.APPLICATION_JSON)
-        )
+        getUserById(groupId, token1)
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.name").value(createGroupRequest.name))
     }
 
     @Test
+    fun `should not get group by ID`() {
+        // Шаг 1: создаем группу
+        val result = createGroup(createGroupRequest, token1)
+            .andExpect(status().isCreated)
+            .andReturn()
+
+        val response = objectMapper.readTree(result.response.contentAsString)
+        val groupId = response.get("id").asLong()
+
+        // Шаг 2: получаем по ID
+        val notExistsId = groupId + 1
+        getUserById(notExistsId, token1)
+            .andExpect(status().isNotFound)
+    }
+
+    @Test
     fun `should join group`() {
         // Шаг 1: создаём группу
-        val createdGroup = mockMvc.perform(
-            post("/api/private/groups")
-                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(createGroupRequest))
-        )
+        val createdGroup = createGroup(createGroupRequest, token1)
             .andExpect(status().isCreated)
             .andReturn()
 
@@ -111,25 +112,63 @@ class GroupControllerTest {
         val joinGroupRequest = JoinGroupRequest(inviteToken)
 
         // Шаг 2: присоединяемся
-        mockMvc.perform(
-            post("/api/private/groups/join")
-                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token2")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(joinGroupRequest))
-        )
+        joinUserToGroup(joinGroupRequest, token2)
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.name").value(createGroupRequest.name))
     }
 
+
+    @Test
+    fun `should not join group`() {
+        // Шаг 1: создаём группу
+        val createdGroup = createGroup(createGroupRequest, token1)
+            .andExpect(status().isCreated)
+            .andReturn()
+
+        val createdGroupResponse = objectMapper.readTree(createdGroup.response.contentAsString)
+        val inviteToken = createdGroupResponse.get("inviteToken").asText()
+        val joinGroupRequest = JoinGroupRequest(inviteToken)
+
+        // Шаг 2: присоединяемся
+        joinUserToGroup(joinGroupRequest, token1)
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `should forbidden to join group`() {
+        // Шаг 1: создаём группу
+        val createdGroup = createGroup(createGroupRequest, token1)
+            .andExpect(status().isCreated)
+            .andReturn()
+
+        val createdGroupResponse = objectMapper.readTree(createdGroup.response.contentAsString)
+        val inviteToken = createdGroupResponse.get("inviteToken").asText()
+        val joinGroupRequest = JoinGroupRequest(inviteToken)
+
+        // Шаг 2: присоединяемся
+        joinUserToGroup(joinGroupRequest, "invalid token")
+            .andExpect(status().isForbidden)
+    }
+
+    @Test
+    fun `should not found group`() {
+        // Шаг 1: создаём группу
+        createGroup(createGroupRequest, token1)
+            .andExpect(status().isCreated)
+            .andReturn()
+
+        val joinGroupRequest = JoinGroupRequest("invalidInviteToken")
+
+        // Шаг 2: присоединяемся
+        joinUserToGroup(joinGroupRequest, token2)
+            .andExpect(status().isNotFound)
+    }
+
+//    joinUserToGroup
     @Test
     fun `should get group members list`() {
         // Шаг 1: создаём группу
-        val createResult = mockMvc.perform(
-            post("/api/private/groups")
-                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(createGroupRequest))
-        )
+        val createResult = createGroup(createGroupRequest, token1)
             .andExpect(status().isCreated)
             .andReturn()
 
@@ -139,12 +178,7 @@ class GroupControllerTest {
         val joinGroupRequest = JoinGroupRequest(inviteToken)
 
         // Шаг 2: присоединяем второго пользователя
-        mockMvc.perform(
-            post("/api/private/groups/join")
-                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token2")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(joinGroupRequest))
-        )
+        joinUserToGroup(joinGroupRequest, token2)
             .andExpect(status().isOk)
 
         // Шаг 3: получаем список участников
@@ -157,5 +191,33 @@ class GroupControllerTest {
             .andExpect(jsonPath("$.length()").value(2))
             .andExpect(jsonPath("$[0].email").value(registerRequest1.email))
             .andExpect(jsonPath("$[1].email").value(registerRequest2.email))
+    }
+
+
+    private fun createGroup(request: CreateGroupRequest, token: String?): ResultActions {
+        val createResponse = mockMvc.perform(
+            post("/api/private/groups")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+        return createResponse
+    }
+
+    private fun getUserById(groupId: Long, token: String?): ResultActions {
+        return mockMvc.perform(
+            get("/api/private/groups/$groupId")
+            .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token")
+            .contentType(MediaType.APPLICATION_JSON)
+        )
+    }
+
+    private fun joinUserToGroup(request: JoinGroupRequest, token: String?): ResultActions{
+        return mockMvc.perform(
+            post("/api/private/groups/join")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
     }
 }

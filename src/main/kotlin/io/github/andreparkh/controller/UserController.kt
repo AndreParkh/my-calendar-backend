@@ -1,6 +1,7 @@
 package io.github.andreparkh.controller
 
 import io.github.andreparkh.config.HttpConstants
+import io.github.andreparkh.dto.ErrorResponse
 import io.github.andreparkh.dto.user.ChangeRoleRequest
 import io.github.andreparkh.dto.user.UserResponse
 import io.github.andreparkh.dto.user.UpdateUser
@@ -31,15 +32,19 @@ class UserController (
             ApiResponse(responseCode = "200", description = "Пользователь найден", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = UserResponse::class))
             ]),
-            ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
-            ApiResponse(responseCode = "404", description = "Пользователь не найден")
+            ApiResponse(responseCode = "401", description = "Пользователь не авторизован", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+            ]),
+            ApiResponse(responseCode = "404", description = "Пользователь не найден", content = [
+                Content(schema = Schema())
+            ])
         ]
     )
     fun getUserById(
         @PathVariable
         @Parameter(description = "ID пользователя", required = true)
         id: Long
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<UserResponse> {
             return ResponseEntity.ok(userService.getUserById(id))
     }
 
@@ -51,10 +56,12 @@ class UserController (
             ApiResponse(responseCode = "200", description = "Список пользователей успешно получен", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = Array<UserResponse>::class))
             ]),
-            ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
+            ApiResponse(responseCode = "401", description = "Пользователь не авторизован", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+            ]),
         ]
     )
-    fun getAllUsers(): ResponseEntity<Any> {
+    fun getAllUsers(): ResponseEntity<List<UserResponse>> {
         return ResponseEntity.ok(userService.getAllUsers())
     }
 
@@ -66,10 +73,18 @@ class UserController (
             ApiResponse(responseCode = "200", description = "Данные пользователя успешно обновлены", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = UserResponse::class))
             ]),
-            ApiResponse(responseCode = "400", description = "Некорректные данные запроса или поля имеют недопустимые значения"),
-            ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
-            ApiResponse(responseCode = "403", description = "Недостаточно прав для изменения"),
-            ApiResponse(responseCode = "404", description = "Пользователь не авторизован"),
+            ApiResponse(responseCode = "400", description = "Некорректные данные запроса или поля имеют недопустимые значения", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+            ]),
+            ApiResponse(responseCode = "401", description = "Пользователь не авторизован", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+            ]),
+            ApiResponse(responseCode = "403", description = "Недостаточно прав для изменения", content = [
+                Content(schema = Schema())
+            ]),
+            ApiResponse(responseCode = "404", description = "Пользователь не авторизован", content = [
+                Content(schema = Schema())
+            ]),
         ]
     )
     fun updateUser(
@@ -86,7 +101,7 @@ class UserController (
             ]
         )
         updateUser: UpdateUser
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<UserResponse> {
         return ResponseEntity.ok(userService.updateUser(id, updateUser))
     }
 

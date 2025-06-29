@@ -1,6 +1,7 @@
 package io.github.andreparkh.controller
 
 import io.github.andreparkh.config.HttpConstants
+import io.github.andreparkh.dto.ErrorResponse
 import io.github.andreparkh.dto.event.*
 import io.github.andreparkh.service.EventService
 import io.swagger.v3.oas.annotations.Operation
@@ -27,14 +28,16 @@ class EventController(
             ApiResponse(responseCode = "201", description = "Событие успешно создано", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = EventResponse::class))
             ]),
-            ApiResponse(responseCode = "404", description = "Пользователь не найден")
+            ApiResponse(responseCode = "404", description = "Пользователь не найден", content = [
+                Content(schema = Schema())
+            ])
         ]
     )
     fun createEvent(
         @RequestBody
         @Parameter(description = "Данные для создания события", required = true)
         eventRequest: EventRequest,
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<EventResponse> {
         val event = eventService.createEvent(eventRequest)
         return ResponseEntity.created(URI("/api/private/events/${event.id}")).body(event)
     }
@@ -48,15 +51,19 @@ class EventController(
             ApiResponse(responseCode = "200", description = "Информация о событии", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = EventResponse::class))
             ]),
-            ApiResponse(responseCode = "403", description = "Доступ запрещен", content = []),
-            ApiResponse(responseCode = "404", description = "Событие не найдено", content = [])
+            ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
+                Content(schema = Schema(implementation = ErrorResponse::class))
+            ]),
+            ApiResponse(responseCode = "404", description = "Событие не найдено", content = [
+                Content(schema = Schema())
+            ])
         ]
     )
     fun getEventById(
         @PathVariable
         @Parameter(description = "ID события", example = "1")
         eventId: Long,
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<EventResponse> {
         val event = eventService.getEventById(eventId)
         return ResponseEntity.ok(event)
     }
@@ -70,15 +77,19 @@ class EventController(
             ApiResponse(responseCode = "200", description = "Список участников события", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = Array<ParticipantResponse>::class))
             ]),
-            ApiResponse(responseCode = "403", description = "Доступ запрещен", content = []),
-            ApiResponse(responseCode = "404", description = "Событие не найдено", content = [])
+            ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
+                Content(schema = Schema())
+            ]),
+            ApiResponse(responseCode = "404", description = "Событие не найдено", content = [
+                Content(schema = Schema())
+            ])
         ]
     )
     fun getAllParticipantsByEventId(
         @PathVariable
         @Parameter(description = "ID события", example = "1")
         id: Long,
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<List<ParticipantResponse>> {
         val participants = eventService.getAllParticipantsByEventId(id)
         return ResponseEntity.ok(participants)
     }
@@ -92,8 +103,12 @@ class EventController(
             ApiResponse(responseCode = "200", description = "Приглашение отправлено", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = Array<ParticipantResponse>::class))
             ]),
-            ApiResponse(responseCode = "400", description = "Некорректные данные", content = []),
-            ApiResponse(responseCode = "404", description = "Событие или пользователь не найдены", content = [])
+            ApiResponse(responseCode = "400", description = "Некорректные данные", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+            ]),
+            ApiResponse(responseCode = "404", description = "Событие или пользователь не найдены", content = [
+                Content(schema = Schema())
+            ])
         ]
     )
     fun joinEvent(
@@ -104,7 +119,7 @@ class EventController(
         @RequestBody
         @Parameter(description = "Данные для приглашения участника", required = true)
         joinEventRequest: JoinEventRequest,
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<List<ParticipantResponse>> {
         val participants = eventService.joinEventById(eventId, joinEventRequest.userId)
         return ResponseEntity.ok(participants)
     }
@@ -118,8 +133,12 @@ class EventController(
             ApiResponse(responseCode = "200", description = "Статус участника успешно обновлен", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ParticipantResponse::class))
             ]),
-            ApiResponse(responseCode = "400", description = "Некорректный статус или пользователь не состоит в событии", content = []),
-            ApiResponse(responseCode = "404", description = "Событие или пользователь не найдены", content = [])
+            ApiResponse(responseCode = "400", description = "Некорректный статус или пользователь не состоит в событии", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+            ]),
+            ApiResponse(responseCode = "404", description = "Событие или пользователь не найдены", content = [
+                Content(schema = Schema())
+            ])
         ]
     )
     fun updateStatus(
@@ -130,7 +149,7 @@ class EventController(
         @RequestBody
         @Parameter(description = "Данные для обновления статуса", required = true)
         request: UpdateParticipationStatusRequest
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<ParticipantResponse> {
         val updatedParticipant = eventService.updateParticipationStatus(eventId, request)
         return ResponseEntity.ok(updatedParticipant)
     }

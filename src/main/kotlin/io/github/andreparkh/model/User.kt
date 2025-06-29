@@ -57,23 +57,23 @@ data class User (
 
     fun isAdmin(): Boolean = this.role == AppRoles.ADMIN_ROLE
 
-    fun toUserResponse(): UserResponse {
+    fun getId(): Long {
         require(this.id != null) { "User ID must not be null" }
-
-        return UserResponse(
-            id = this.id,
-            email = this.email,
-            firstName = this.firstName,
-            lastName = this.lastName,
-            role = this.role,
-            avatarUrl = this.avatarUrl,
-            workStartTime = this.workStartTime,
-            workEndTime = this.workEndTime,
-            vacationStart = this.vacationStart,
-            vacationEnd = this.vacationEnd,
-            createdAt = this.createdAt,
-            updatedAt = this.updatedAt
-        )
+        return this.id
     }
 
+    fun toUserResponse() = UserResponse(
+        id = this.getId(),
+        email = this.email,
+        firstName = this.firstName,
+        lastName = this.lastName,
+        role = this.role,
+        avatarUrl = this.avatarUrl,
+        workStartTime = this.workStartTime,
+        workEndTime = this.workEndTime,
+        vacationStart = this.vacationStart,
+        vacationEnd = this.vacationEnd,
+        createdAt = this.createdAt,
+        updatedAt = this.updatedAt
+    )
 }

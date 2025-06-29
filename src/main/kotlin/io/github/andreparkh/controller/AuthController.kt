@@ -1,5 +1,7 @@
 package io.github.andreparkh.controller
 
+import io.github.andreparkh.config.HttpConstants
+import io.github.andreparkh.dto.ErrorResponse
 import io.github.andreparkh.dto.auth.AuthResponse
 import io.github.andreparkh.dto.auth.LoginRequest
 import io.github.andreparkh.dto.auth.RegisterRequest
@@ -26,17 +28,19 @@ class AuthController(
         summary = "Регистрация нового пользователя",
         description = "Создание нового пользователя в системе",
         responses = [
-            ApiResponse(responseCode = "200", description = "Пользователь успешно создан",
-                content = [Content(mediaType = "application/json",
-                    schema = Schema(implementation = AuthResponse::class))]),
-            ApiResponse(responseCode = "400", description = "Пользователь с таким email уже существует"),
+            ApiResponse(responseCode = "200", description = "Пользователь успешно создан", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = AuthResponse::class))
+            ]),
+            ApiResponse(responseCode = "400", description = "Пользователь с таким email уже существует", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+            ]),
         ]
     )
     fun register(
         @RequestBody
         @Parameter(description = "Данные пользователя", required = true)
         request: RegisterRequest
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<AuthResponse> {
         return ResponseEntity.ok(authService.register(request))
     }
 
@@ -45,17 +49,19 @@ class AuthController(
         summary = "Аутентификация пользователя",
         description = "Возращает токен при успешной аутентификации",
         responses = [
-            ApiResponse(responseCode = "200", description = "Успешная аутентификация. Возвращается токен доступа",
-                content = [Content(mediaType = "application/json",
-                    schema = Schema(implementation = AuthResponse::class))]),
-            ApiResponse(responseCode = "400", description = "Неверные учетные данные"),
+            ApiResponse(responseCode = "200", description = "Успешная аутентификация. Возвращается токен доступа", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = AuthResponse::class))
+            ]),
+            ApiResponse(responseCode = "400", description = "Неверные учетные данные", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+            ]),
         ]
     )
     fun login(
         @RequestBody
         @Parameter(description = "Учетные данные пользователя", required = true)
         request: LoginRequest
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<AuthResponse> {
         return try{
             return ResponseEntity.ok(authService.login(request))
         } catch (e: AuthenticationException) {

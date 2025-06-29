@@ -1,5 +1,6 @@
 package io.github.andreparkh.service
 
+import io.github.andreparkh.config.GroupErrorMessages
 import io.github.andreparkh.dto.group.CreateGroupRequest
 import io.github.andreparkh.dto.group.GroupMemberResponse
 import io.github.andreparkh.dto.group.GroupResponse
@@ -8,7 +9,6 @@ import io.github.andreparkh.model.Group
 import io.github.andreparkh.model.GroupMember
 import io.github.andreparkh.repository.GroupMemberRepository
 import io.github.andreparkh.repository.GroupRepository
-import io.github.andreparkh.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 
@@ -16,12 +16,11 @@ import org.springframework.stereotype.Service
 class GroupService(
     private val groupRepository: GroupRepository,
     private val groupMemberRepository: GroupMemberRepository,
-    private val userRepository: UserRepository
+    private val userService: UserService
 ) {
-    fun createGroup(createGroupRequest: CreateGroupRequest, currentUserEmail: String): GroupResponse {
+    fun createGroup(createGroupRequest: CreateGroupRequest): GroupResponse {
 
-        val currentUser = userRepository.findByEmail(currentUserEmail)
-            .orElseThrow{ EntityNotFoundException("Текущий пользователь не найден") }
+        val currentUser = userService.getCurrentUser()
 
         val group = Group(
             name = createGroupRequest.name,
@@ -41,21 +40,20 @@ class GroupService(
 
     fun getGroupById(groupId: Long): GroupResponse {
         val group = groupRepository.findById(groupId)
-            .orElseThrow { EntityNotFoundException("Группа с ID $groupId не найдена") }
+            .orElseThrow { EntityNotFoundException(String.format(GroupErrorMessages.NOT_FOUND_BY_ID, groupId))}
         return group.toGroupResponse()
     }
 
-    fun joinGroup(inviteToken: String, currentUserEmail: String): GroupResponse {
+    fun joinGroup(inviteToken: String): GroupResponse {
         val group = groupRepository.findByInviteToken(inviteToken)
-            .orElseThrow { EntityNotFoundException("Группа с таким токеном не найдена") }
+            .orElseThrow { EntityNotFoundException(GroupErrorMessages.NOT_FOUND_BY_TOKEN) }
 
-        val currentUser = userRepository.findByEmail(currentUserEmail)
-            .orElseThrow{ EntityNotFoundException("Текущий пользователь не найден") }
+        val currentUser = userService.getCurrentUser()
 
-        if (!group.isTokenValid()) throw IllegalArgumentException("Токен недействитен")
+        if (!group.isTokenValid()) throw IllegalArgumentException(GroupErrorMessages.TOKEN_INVALID)
 
-        if (groupMemberRepository.existsByUserIdAndGroupId(currentUser.id!!, group.id!!))
-            throw IllegalArgumentException("Пользователь уже состоит в группе")
+        if (groupMemberRepository.existsByUserIdAndGroupId(currentUser.getId(), group.getId()))
+            throw IllegalArgumentException(GroupErrorMessages.USER_ALREADY_IN_GROUP)
 
         val member = GroupMember(
             user = currentUser,

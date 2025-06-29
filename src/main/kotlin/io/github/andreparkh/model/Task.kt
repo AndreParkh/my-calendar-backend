@@ -34,7 +34,7 @@ data class Task(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var status: TastStatus? = TastStatus.NEW,
+    var status: TastStatus = TastStatus.NEW,
 
     @Column(nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),

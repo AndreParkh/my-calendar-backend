@@ -25,8 +25,13 @@ data class Group (
     @Column(nullable = false)
     var createdAt: LocalDateTime = LocalDateTime.now()
 ){
+    fun getId(): Long {
+        require(this.id != null) { "Group ID must not be null" }
+        return this.id
+    }
+
     fun toGroupResponse() = GroupResponse(
-        id = this.id,
+        id = this.getId(),
         name = this.name,
         inviteToken = this.inviteToken,
         createdAt = this.createdAt

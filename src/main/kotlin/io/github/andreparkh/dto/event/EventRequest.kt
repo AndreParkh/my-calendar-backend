@@ -8,5 +8,5 @@ data class EventRequest(
     var startTime: LocalDateTime,
     var endTime: LocalDateTime,
     var isRepeatable: Boolean? = false,
-    var repeateRule: String? = null
+    var repeatRule: String? = null
 )
