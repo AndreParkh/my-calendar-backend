@@ -44,7 +44,7 @@ class AuthControllerTest {
     }
 
     @Test
-    fun `should don't register user`() {
+    fun `should return bad request when registering an existing user`() {
         mockMvc.perform(
             post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -85,7 +85,7 @@ class AuthControllerTest {
     }
 
     @Test
-    fun `should don't login user`() {
+    fun `should return bad request when trying login with unregistered user`() {
         val loginRequest = LoginRequest(
             email = registerUser.email,
             password = registerUser.password

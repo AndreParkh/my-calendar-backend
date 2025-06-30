@@ -56,8 +56,8 @@ class UserController (
             ApiResponse(responseCode = "200", description = "Список пользователей успешно получен", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = Array<UserResponse>::class))
             ]),
-            ApiResponse(responseCode = "401", description = "Пользователь не авторизован", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+            ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
+                Content(schema = Schema())
             ]),
         ]
     )
@@ -79,7 +79,7 @@ class UserController (
             ApiResponse(responseCode = "401", description = "Пользователь не авторизован", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
             ]),
-            ApiResponse(responseCode = "403", description = "Недостаточно прав для изменения", content = [
+            ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
                 Content(schema = Schema())
             ]),
             ApiResponse(responseCode = "404", description = "Пользователь не авторизован", content = [
@@ -112,7 +112,7 @@ class UserController (
         responses = [
             ApiResponse(responseCode = "200", description = "Роль успешно изменена"),
             ApiResponse(responseCode = "400", description = "Ошибка запроса: неверная роль"),
-            ApiResponse(responseCode = "403", description = "Недостаточно прав для изменения"),
+            ApiResponse(responseCode = "403", description = "Доступ запрещен"),
             ApiResponse(responseCode = "404", description = "Пользователь не найден")
         ]
     )

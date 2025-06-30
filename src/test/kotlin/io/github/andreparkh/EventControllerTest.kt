@@ -75,6 +75,12 @@ class EventControllerTest {
     }
 
     @Test
+    fun `should return forbidden when creating event with invalid token`() {
+        createEvent("InvalidToken", eventRequest)
+            .andExpect(status().isForbidden)
+    }
+
+    @Test
     fun `should get event by ID`() {
 
         val createdEvent = createEvent(token1!!, eventRequest)
@@ -94,6 +100,46 @@ class EventControllerTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.id").value(eventId))
             .andExpect(jsonPath("$.title").value(eventRequest.title))
+    }
+
+    @Test
+    fun `should return forbidden when trying to get event by another user`() {
+
+        val createdEvent = createEvent(token1!!, eventRequest)
+            .andExpect(status().isCreated)
+            .andReturn()
+
+        val eventId = objectMapper
+            .readTree(createdEvent.response.contentAsString)
+            .get("id")
+            .asLong()
+
+        mockMvc.perform(
+            get("/api/private/events/$eventId")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token2")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isForbidden)
+    }
+
+    @Test
+    fun `should return not found when trying to get event by non-exiting ID`() {
+
+        val createdEvent = createEvent(token1!!, eventRequest)
+            .andExpect(status().isCreated)
+            .andReturn()
+
+        val eventId = objectMapper
+            .readTree(createdEvent.response.contentAsString)
+            .get("id")
+            .asLong()
+
+        mockMvc.perform(
+            get("/api/private/events/${eventId + 1}")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token1")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isNotFound)
     }
 
     @Test
@@ -127,6 +173,36 @@ class EventControllerTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$[0].userId").value(userId1))
             .andExpect(jsonPath("$[1].userId").value(userId2))
+    }
+
+    @Test
+    fun `should return bad request when trying to join own event`() {
+        val createdEvent = createEvent(token1!!, eventRequest)
+            .andExpect(status().isCreated)
+            .andReturn()
+
+        val eventId = objectMapper
+            .readTree(createdEvent.response.contentAsString)
+            .get("id")
+            .asLong()
+
+        val responseUsers = mockMvc.perform(
+            get("/api/private/users")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token1")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andReturn()
+
+        val users = objectMapper.readTree(responseUsers.response.contentAsString)
+        userId1 = users[0].get("id").asLong()
+
+        val joinRequest = JoinEventRequest(
+            userId = userId1!!
+        )
+
+        joinUserToEvent(token1!!, eventId, joinRequest)
+            .andExpect(status().isBadRequest)
     }
 
     @Test
@@ -174,6 +250,48 @@ class EventControllerTest {
             .andExpect(jsonPath("$.status").value(updateStatusRequest.newStatus))
     }
 
+    @Test
+    fun `should return bad request when updating status with invalid status`() {
+        val createdEvent = createEvent(token1!!, eventRequest)
+            .andExpect(status().isCreated)
+            .andReturn()
+
+        val eventId = objectMapper
+            .readTree(createdEvent.response.contentAsString)
+            .get("id")
+            .asLong()
+
+        val responseUsers = mockMvc.perform(
+            get("/api/private/users")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token1")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andReturn()
+
+        val users = objectMapper.readTree(responseUsers.response.contentAsString)
+        userId1 = users[0].get("id").asLong()
+        userId2 = users[1].get("id").asLong()
+
+        val joinRequest = JoinEventRequest(
+            userId = userId2!!
+        )
+        joinUserToEvent(token1!!, eventId, joinRequest)
+            .andExpect(status().isOk)
+
+        val updateStatusRequest = UpdateParticipationStatusRequest(
+            participantId = userId2!!,
+            newStatus = "InvalidStatus"
+        )
+
+        mockMvc.perform(
+            put("/api/private/events/$eventId/update-status")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token2")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateStatusRequest))
+        )
+            .andExpect(status().isBadRequest)
+    }
 
 
     private fun createEvent(authToken: String, eventRequest: EventRequest): ResultActions {

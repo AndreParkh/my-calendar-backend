@@ -28,9 +28,9 @@ class EventController(
             ApiResponse(responseCode = "201", description = "Событие успешно создано", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = EventResponse::class))
             ]),
-            ApiResponse(responseCode = "404", description = "Пользователь не найден", content = [
+            ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
                 Content(schema = Schema())
-            ])
+            ]),
         ]
     )
     fun createEvent(

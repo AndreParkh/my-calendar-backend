@@ -63,7 +63,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should not create group`() {
+    fun `should return forbidden when creating group with invalid token`() {
         createGroup(createGroupRequest, "invalidToken")
             .andExpect(status().isForbidden)
     }
@@ -85,7 +85,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should not get group by ID`() {
+    fun `should return not found when trying get group with non-existent ID`() {
         // Шаг 1: создаем группу
         val result = createGroup(createGroupRequest, token1)
             .andExpect(status().isCreated)
@@ -117,9 +117,8 @@ class GroupControllerTest {
             .andExpect(jsonPath("$.name").value(createGroupRequest.name))
     }
 
-
     @Test
-    fun `should not join group`() {
+    fun `should return bad request when trying to join own group`() {
         // Шаг 1: создаём группу
         val createdGroup = createGroup(createGroupRequest, token1)
             .andExpect(status().isCreated)
@@ -135,7 +134,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should forbidden to join group`() {
+    fun `should return forbidden when trying to join group with invalid token`() {
         // Шаг 1: создаём группу
         val createdGroup = createGroup(createGroupRequest, token1)
             .andExpect(status().isCreated)
@@ -151,7 +150,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should not found group`() {
+    fun `should return bad request when trying to join group with invalid invite token`() {
         // Шаг 1: создаём группу
         createGroup(createGroupRequest, token1)
             .andExpect(status().isCreated)

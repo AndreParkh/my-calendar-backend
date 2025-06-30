@@ -108,10 +108,10 @@ class UserControllerTest {
     }
 
     @Test
-    fun `should forbidden to get user by ID`() {
+    fun `should return forbidden when getting user with invalid token`() {
         mockMvc.perform(
             get("/api/private/users")
-                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} InvalidToken")
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isForbidden)
@@ -182,6 +182,66 @@ class UserControllerTest {
             .andExpect(jsonPath("$.vacationStart").value("2025-01-01"))
             .andExpect(jsonPath("$.vacationEnd").value("2025-01-14"))
     }
+
+
+    @Test
+    fun `should return not found when trying update an unregistering user`() {
+
+        val createResponse = mockMvc.perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerRequest1))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.token").isNotEmpty)
+            .andReturn()
+
+        val token = createResponse
+            .response
+            .contentAsString
+            .let { objectMapper.readTree(it) }
+            .get("token")
+            .asText()
+
+        val userList = mockMvc.perform(
+            get("/api/private/users")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andReturn()
+            .response
+            .contentAsString
+            .let { objectMapper.readTree( it ) }
+
+        var userId: Long = 0
+
+        for (user in userList) {
+            val email = user.get("email").asText()
+            if (email == registerRequest1.email) {
+                userId = user.get("id").asLong()
+                break
+            }
+        }
+
+        val updateUser = UpdateUser(
+            firstName = "JohnUpdate",
+            lastName = "DoeUpdate",
+            avatarUrl = "updated",
+            workStartTime = LocalTime.of(9,0),
+            workEndTime = LocalTime.of(18,0),
+            vacationStart = LocalDate.of(2025, 1,1),
+            vacationEnd = LocalDate.of(2025, 1, 14)
+        )
+
+        mockMvc.perform(
+            put("/api/private/users/${userId + 1}")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateUser))
+        )
+            .andExpect(status().isNotFound)
+    }
+
 
     private fun registerUser(request: RegisterRequest): ResultActions {
         val createResponse = mockMvc.perform(
