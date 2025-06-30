@@ -53,7 +53,7 @@ class AuthController(
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = AuthResponse::class))
             ]),
             ApiResponse(responseCode = "400", description = "Неверные учетные данные", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+                Content(schema = Schema())
             ]),
         ]
     )

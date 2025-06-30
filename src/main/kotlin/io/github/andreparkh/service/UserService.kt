@@ -1,7 +1,6 @@
 package io.github.andreparkh.service
 
 import io.github.andreparkh.config.AppRoles
-import io.github.andreparkh.config.Constants
 import io.github.andreparkh.config.UserErrorMessages
 import io.github.andreparkh.dto.auth.RegisterRequest
 import io.github.andreparkh.dto.user.UserResponse
@@ -9,7 +8,6 @@ import io.github.andreparkh.dto.user.UpdateUser
 import io.github.andreparkh.model.User
 import io.github.andreparkh.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
-import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder

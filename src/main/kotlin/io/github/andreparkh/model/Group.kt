@@ -1,6 +1,5 @@
 package io.github.andreparkh.model
 
-import io.github.andreparkh.config.JwtConstants
 import io.github.andreparkh.dto.group.GroupResponse
 import jakarta.persistence.*
 import java.time.LocalDateTime
