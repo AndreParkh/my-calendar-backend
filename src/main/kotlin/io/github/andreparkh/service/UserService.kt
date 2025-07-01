@@ -12,6 +12,9 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 @Service
 class UserService(
@@ -97,6 +100,20 @@ class UserService(
 
         userRepository.deleteById(id)
         return true
+    }
+
+    fun mockUser(): User {
+        return User(
+            id = 999,
+            firstName = "Иван",
+            lastName =  "Иванов",
+            email = "Ivanov@example.com",
+            passwordHash = passwordEncoder.encode("test"),
+            vacationStart = LocalDate.now().minusDays(3),
+            vacationEnd = LocalDate.now().plusDays(3),
+            workStartTime = LocalTime.of(9,0),
+            workEndTime = LocalTime.of(18 ,0),
+        )
     }
 
     fun getCurrentUser(): User {
