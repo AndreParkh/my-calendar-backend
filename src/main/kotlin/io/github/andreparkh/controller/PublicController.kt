@@ -1,22 +1,33 @@
 package io.github.andreparkh.controller
 
+import io.github.andreparkh.config.HttpConstants
 import io.github.andreparkh.dto.user.UserResponse
 import io.github.andreparkh.service.UserService
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.CrossOrigin
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/public/")
-@CrossOrigin(origins = ["http://localhost:5173"])
+@CrossOrigin(origins = ["http://localhost"])
 @Tag(name = "", description = "")
 class PublicController(
     private val userService: UserService
 ) {
     @GetMapping("/user")
+    @Operation(
+        summary = "Получение информации о пользователе",
+        description = "Позволяет получить информацию от сервера для проверки работы",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Пользователь получен", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = UserResponse::class))
+            ]),
+        ]
+    )
     fun mockUser(): ResponseEntity<UserResponse> {
         val user = userService.mockUser()
         return ResponseEntity.ok(user.toUserResponse())
