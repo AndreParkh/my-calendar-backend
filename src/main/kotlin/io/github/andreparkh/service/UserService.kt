@@ -108,8 +108,8 @@ class UserService(
             lastName =  "Иванов",
             email = "Ivanov@example.com",
             passwordHash = passwordEncoder.encode("test"),
-            vacationStart = LocalDate.now().minusDays(3),
-            vacationEnd = LocalDate.now().plusDays(3),
+            vacationStart = LocalDate.of(2025,1,1),
+            vacationEnd = LocalDate.of(2025, 1,14),
             workStartTime = LocalTime.of(9,0),
             workEndTime = LocalTime.of(18 ,0),
         )
