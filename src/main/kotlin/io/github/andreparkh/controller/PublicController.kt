@@ -13,8 +13,7 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/public/")
-@CrossOrigin(origins = ["http://localhost"])
-@Tag(name = "", description = "")
+@Tag(name = "Публичные API", description = "API не требующие авторизации")
 class PublicController(
     private val userService: UserService
 ) {
