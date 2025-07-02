@@ -1,4 +1,4 @@
-package io.github.andreparkh.dto
+package io.github.andreparkh.dto.auth
 
 data class RegisterRequest (
     val firstName: String,

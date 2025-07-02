@@ -1,7 +1,7 @@
 package io.github.andreparkh.model
 
 import io.github.andreparkh.config.AppRoles
-import io.github.andreparkh.dto.ResponseUser
+import io.github.andreparkh.dto.user.UserResponse
 import jakarta.persistence.*
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -27,10 +27,10 @@ data class User (
     var lastName: String,
 
     @Column(nullable = false)
-    var role: String? = AppRoles.USER_ROLE,
+    var role: String = AppRoles.USER_ROLE,
 
     @Column
-    var avatarUrl: String? = null,
+    var avatarUrl: String = "",
 
     @Column
     var workStartTime: LocalTime? = null,
@@ -57,8 +57,13 @@ data class User (
 
     fun isAdmin(): Boolean = this.role == AppRoles.ADMIN_ROLE
 
-    fun toResponseUser() = ResponseUser(
-        id = this.id,
+    fun getId(): Long {
+        require(this.id != null) { "User ID must not be null" }
+        return this.id
+    }
+
+    fun toUserResponse() = UserResponse(
+        id = this.getId(),
         email = this.email,
         firstName = this.firstName,
         lastName = this.lastName,
@@ -71,5 +76,4 @@ data class User (
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )
-
 }

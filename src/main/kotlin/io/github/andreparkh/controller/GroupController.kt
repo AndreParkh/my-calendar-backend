@@ -1,6 +1,7 @@
 package io.github.andreparkh.controller
 
 import io.github.andreparkh.config.HttpConstants
+import io.github.andreparkh.dto.ErrorResponse
 import io.github.andreparkh.dto.group.*
 import io.github.andreparkh.service.GroupService
 import io.swagger.v3.oas.annotations.Operation
@@ -10,7 +11,6 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import java.net.URI
 
@@ -28,18 +28,17 @@ class GroupController (
             ApiResponse(responseCode = "201", description = "Группа успешно создана", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = GroupResponse::class))
             ]),
-            ApiResponse(responseCode = "400", description = "Некорректные данные запроса", content = [])
+            ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
+                Content(schema = Schema())
+            ])
         ]
     )
     fun createGroup(
         @RequestBody
         @Parameter(description = "Данные для создания группы", required = true)
         createGroupRequest: CreateGroupRequest,
-
-        @Parameter(hidden = true)
-        authentication: Authentication
     ): ResponseEntity<GroupResponse> {
-        val createdGroup = groupService.createGroup(createGroupRequest, authentication.name)
+        val createdGroup = groupService.createGroup(createGroupRequest)
         return ResponseEntity.created(URI("/api/private/groups/${createdGroup.id}")).body(createdGroup)
     }
 
@@ -51,7 +50,12 @@ class GroupController (
             ApiResponse(responseCode = "200", description = "Информация о группе", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = GroupResponse::class))
             ]),
-            ApiResponse(responseCode = "404", description = "Группа не найдена", content = [])
+            ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
+                Content(schema = Schema())
+            ]),
+            ApiResponse(responseCode = "404", description = "Группа не найдена", content = [
+                Content(schema = Schema())
+            ])
         ]
     )
     fun getGroupById(
@@ -71,19 +75,23 @@ class GroupController (
             ApiResponse(responseCode = "200", description = "Успешное присоединение к группе", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = GroupResponse::class))
             ]),
-            ApiResponse(responseCode = "400", description = "Неверный токен или пользователь уже состоит в группе", content = []),
-            ApiResponse(responseCode = "404", description = "Группа не найдена", content = [])
+            ApiResponse(responseCode = "400", description = "Неверный токен или пользователь уже состоит в группе", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+            ]),
+            ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
+                Content(schema = Schema())
+            ]),
+            ApiResponse(responseCode = "404", description = "Группа не найдена", content = [
+                Content(schema = Schema())
+            ])
         ]
     )
     fun joinGroup(
         @RequestBody
         @Parameter(description = "Пригласительный токен", required = true)
         joinGroupRequest: JoinGroupRequest,
-
-        @Parameter(hidden = true)
-        authentication: Authentication
     ): ResponseEntity<GroupResponse> {
-        val joinedGroup = groupService.joinGroup(joinGroupRequest.inviteToken, authentication.name)
+        val joinedGroup = groupService.joinGroup(joinGroupRequest.inviteToken)
         return ResponseEntity.ok(joinedGroup)
     }
 
@@ -95,7 +103,12 @@ class GroupController (
             ApiResponse(responseCode = "200", description = "Список участников группы", content = [
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = Array<GroupMemberResponse>::class))
             ]),
-            ApiResponse(responseCode = "404", description = "Группа не найдена", content = [])
+            ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
+                Content(schema = Schema())
+            ]),
+            ApiResponse(responseCode = "404", description = "Группа не найдена", content = [
+                Content(schema = Schema())
+            ])
         ]
     )
     fun getListMembers(
@@ -103,7 +116,7 @@ class GroupController (
         @Parameter(description = "ID группы", example = "1")
         groupId: Long
     ): ResponseEntity<List<GroupMemberResponse>> {
-        val members = groupService.listMembers(groupId)
+        val members = groupService.getAllGroupMembersByGroupId(groupId)
         return ResponseEntity.ok(members)
     }
 

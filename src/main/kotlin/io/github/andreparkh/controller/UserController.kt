@@ -1,9 +1,10 @@
 package io.github.andreparkh.controller
 
 import io.github.andreparkh.config.HttpConstants
-import io.github.andreparkh.dto.ChangeRoleRequest
-import io.github.andreparkh.dto.ResponseUser
-import io.github.andreparkh.dto.UpdateUser
+import io.github.andreparkh.dto.ErrorResponse
+import io.github.andreparkh.dto.user.ChangeRoleRequest
+import io.github.andreparkh.dto.user.UserResponse
+import io.github.andreparkh.dto.user.UpdateUser
 import io.github.andreparkh.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -12,7 +13,6 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
 
@@ -29,17 +29,22 @@ class UserController (
         description = "Возвращает пользователя по его уникальному ID",
         responses = [
             ApiResponse(responseCode = "200", description = "Пользователь найден", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ResponseUser::class))
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = UserResponse::class))
             ]),
-            ApiResponse(responseCode = "404", description = "Пользователь не найден")
+            ApiResponse(responseCode = "401", description = "Пользователь не авторизован", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+            ]),
+            ApiResponse(responseCode = "404", description = "Пользователь не найден", content = [
+                Content(schema = Schema())
+            ])
         ]
     )
     fun getUserById(
         @PathVariable
         @Parameter(description = "ID пользователя", required = true)
         id: Long
-    ): ResponseUser? {
-        return userService.getUserById(id)
+    ): ResponseEntity<UserResponse> {
+            return ResponseEntity.ok(userService.getUserById(id))
     }
 
     @GetMapping()
@@ -48,13 +53,15 @@ class UserController (
         description = "Возвращает список всех зарегистрированных пользователей",
         responses = [
             ApiResponse(responseCode = "200", description = "Список пользователей успешно получен", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = Array<ResponseUser>::class))
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = Array<UserResponse>::class))
             ]),
-            ApiResponse(responseCode = "404", description = "Пользователи не найдены")
+            ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
+                Content(schema = Schema())
+            ]),
         ]
     )
-    fun getAllUsers(): List<ResponseUser> {
-        return userService.getAllUsers()
+    fun getAllUsers(): ResponseEntity<List<UserResponse>> {
+        return ResponseEntity.ok(userService.getAllUsers())
     }
 
     @PutMapping("/{id}")
@@ -63,10 +70,20 @@ class UserController (
         description = "Позволяет пользователю обновить личные данные",
         responses = [
             ApiResponse(responseCode = "200", description = "Данные пользователя успешно обновлены", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ResponseUser::class))
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = UserResponse::class))
             ]),
-            ApiResponse(responseCode = "400", description = "Некорректные данные запроса или поля имеют недопустимые значения"),
-            ApiResponse(responseCode = "401", description = "Пользователь не авторизован")
+            ApiResponse(responseCode = "400", description = "Некорректные данные запроса или поля имеют недопустимые значения", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+            ]),
+            ApiResponse(responseCode = "401", description = "Пользователь не авторизован", content = [
+                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+            ]),
+            ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
+                Content(schema = Schema())
+            ]),
+            ApiResponse(responseCode = "404", description = "Пользователь не авторизован", content = [
+                Content(schema = Schema())
+            ]),
         ]
     )
     fun updateUser(
@@ -82,12 +99,9 @@ class UserController (
                 Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = UpdateUser::class))
             ]
         )
-        updateUser: UpdateUser,
-
-        @Parameter(hidden = true)
-        authentication: Authentication
-    ): ResponseUser? {
-        return userService.updateUser(id, updateUser, authentication.name)
+        updateUser: UpdateUser
+    ): ResponseEntity<UserResponse> {
+        return ResponseEntity.ok(userService.updateUser(id, updateUser))
     }
 
     @PutMapping("/{id}/role")
@@ -96,8 +110,9 @@ class UserController (
         description = "Позволяет администратору изменить роль пользователя по его ID",
         responses = [
             ApiResponse(responseCode = "200", description = "Роль успешно изменена"),
-            ApiResponse(responseCode = "400", description = "Ошибка запроса: неверная роль или пользователь не найден"),
-            ApiResponse(responseCode = "404", description = "Пользователь с указанным ID не найден")
+            ApiResponse(responseCode = "400", description = "Ошибка запроса: неверная роль"),
+            ApiResponse(responseCode = "403", description = "Доступ запрещен"),
+            ApiResponse(responseCode = "404", description = "Пользователь не найден")
         ]
     )
     fun changeRoleById(
@@ -108,11 +123,8 @@ class UserController (
         @RequestBody
         @Parameter(description = "Новая роль пользователя")
         request: ChangeRoleRequest,
-
-        @Parameter(hidden = true)
-        authentication: Authentication
     ): ResponseEntity<Unit> {
-        val success = userService.changeRoleById(id, request.role, authentication.name)
+        val success = userService.changeRoleById(id, request.role)
 
         return if (success) ResponseEntity.ok().build()
         else ResponseEntity.badRequest().build()
@@ -133,11 +145,8 @@ class UserController (
         @PathVariable
         @Parameter(description = "ID пользователя", required = true, example = "1")
         id: Long,
-
-        @Parameter(hidden = true)
-        authentication: Authentication
     ): ResponseEntity<Unit> {
-        val deleted = userService.deleteUserById(id, authentication.name)
+        val deleted = userService.deleteUserById(id)
 
         return if (deleted) ResponseEntity.ok().build()
         else ResponseEntity.notFound().build()

@@ -2,14 +2,15 @@ package io.github.andreparkh
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.andreparkh.config.JwtConstants
-import io.github.andreparkh.dto.RegisterRequest
-import io.github.andreparkh.dto.UpdateUser
+import io.github.andreparkh.dto.auth.RegisterRequest
+import io.github.andreparkh.dto.user.UpdateUser
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.transaction.annotation.Transactional
@@ -34,17 +35,10 @@ class UserControllerTest {
     @Test
     fun `should get all users`() {
 
-        mockMvc.perform(
-            post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerRequest1))
-        ).andExpect(status().isOk)
+        registerUser(registerRequest1)
+            .andExpect(status().isOk)
 
-        val resultAction = mockMvc.perform(
-            post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerRequest2))
-        )
+        val resultAction = registerUser(registerRequest2)
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.token").isNotEmpty)
 
@@ -72,14 +66,8 @@ class UserControllerTest {
     @Test
     fun `should get user by ID`() {
 
-        val createResponse = mockMvc.perform(
-            post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerRequest1))
-        )
+        val createResponse = registerUser(registerRequest1)
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.token").isNotEmpty)
-            .andDo { print( it ) }
             .andReturn()
 
         val token = createResponse
@@ -117,6 +105,16 @@ class UserControllerTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.firstName").value(registerRequest1.firstName))
             .andExpect(jsonPath("$.lastName").value(registerRequest1.lastName))
+    }
+
+    @Test
+    fun `should return forbidden when getting user with invalid token`() {
+        mockMvc.perform(
+            get("/api/private/users")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} InvalidToken")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isForbidden)
     }
 
     @Test
@@ -183,5 +181,74 @@ class UserControllerTest {
             .andExpect(jsonPath("$.workEndTime").value("18:00:00"))
             .andExpect(jsonPath("$.vacationStart").value("2025-01-01"))
             .andExpect(jsonPath("$.vacationEnd").value("2025-01-14"))
+    }
+
+
+    @Test
+    fun `should return not found when trying update an unregistering user`() {
+
+        val createResponse = mockMvc.perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerRequest1))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.token").isNotEmpty)
+            .andReturn()
+
+        val token = createResponse
+            .response
+            .contentAsString
+            .let { objectMapper.readTree(it) }
+            .get("token")
+            .asText()
+
+        val userList = mockMvc.perform(
+            get("/api/private/users")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andReturn()
+            .response
+            .contentAsString
+            .let { objectMapper.readTree( it ) }
+
+        var userId: Long = 0
+
+        for (user in userList) {
+            val email = user.get("email").asText()
+            if (email == registerRequest1.email) {
+                userId = user.get("id").asLong()
+                break
+            }
+        }
+
+        val updateUser = UpdateUser(
+            firstName = "JohnUpdate",
+            lastName = "DoeUpdate",
+            avatarUrl = "updated",
+            workStartTime = LocalTime.of(9,0),
+            workEndTime = LocalTime.of(18,0),
+            vacationStart = LocalDate.of(2025, 1,1),
+            vacationEnd = LocalDate.of(2025, 1, 14)
+        )
+
+        mockMvc.perform(
+            put("/api/private/users/${userId + 1}")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateUser))
+        )
+            .andExpect(status().isNotFound)
+    }
+
+
+    private fun registerUser(request: RegisterRequest): ResultActions {
+        val createResponse = mockMvc.perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+        return createResponse
     }
 }

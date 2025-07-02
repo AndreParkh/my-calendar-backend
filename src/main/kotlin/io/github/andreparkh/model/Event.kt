@@ -1,5 +1,6 @@
 package io.github.andreparkh.model
 
+import io.github.andreparkh.dto.event.EventResponse
 import jakarta.persistence.*
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
@@ -16,7 +17,7 @@ data class Event(
     var title: String,
 
     @Column
-    var description: String? = null,
+    var description: String = "",
 
     @Column(nullable = false)
     var startTime: LocalDateTime,
@@ -30,12 +31,28 @@ data class Event(
     var createdBy: User,
 
     @Column(nullable = false)
-    var isRepeatable: Boolean? = false,
+    var isRepeatable: Boolean = false,
 
     @Column
-    var repeateRule: String? = null,
+    var repeatRule: String = "",
 
     @Column(nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now()
 ) {
+    fun getId(): Long {
+        require(this.id != null) { "Event ID must not be null" }
+        return this.id
+    }
+
+    fun toEventResponse() = EventResponse(
+        id = this.getId(),
+        title = this.title,
+        description = this.description,
+        startTime = this.startTime,
+        endTime = this.endTime,
+        createdById = this.createdBy.getId(),
+        isRepeating = this.isRepeatable,
+        repeatRule = this.repeatRule,
+        createdAt = this. createdAt
+    )
 }

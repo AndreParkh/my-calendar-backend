@@ -1,8 +1,8 @@
 package io.github.andreparkh
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.github.andreparkh.dto.LoginRequest
-import io.github.andreparkh.dto.RegisterRequest
+import io.github.andreparkh.dto.auth.LoginRequest
+import io.github.andreparkh.dto.auth.RegisterRequest
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -33,7 +33,6 @@ class AuthControllerTest {
 
     @Test
     fun `should register user successfully`() {
-
         mockMvc.perform(
             post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -44,7 +43,22 @@ class AuthControllerTest {
             .andExpect(jsonPath("$.token").isNotEmpty)
     }
 
+    @Test
+    fun `should return bad request when registering an existing user`() {
+        mockMvc.perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerUser))
+        )
+            .andExpect(status().isOk)
 
+        mockMvc.perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerUser))
+        )
+            .andExpect(status().isBadRequest)
+    }
 
     @Test
     fun `should login user successfully`() {
@@ -68,5 +82,20 @@ class AuthControllerTest {
             .andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.token").isNotEmpty)
+    }
+
+    @Test
+    fun `should return bad request when trying login with unregistered user`() {
+        val loginRequest = LoginRequest(
+            email = registerUser.email,
+            password = registerUser.password
+        )
+
+        mockMvc.perform(
+            post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest))
+        )
+            .andExpect(status().isBadRequest)
     }
 }
