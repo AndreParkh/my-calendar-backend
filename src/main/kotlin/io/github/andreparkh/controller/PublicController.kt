@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api/public/")
+@RequestMapping("/api/public")
 @Tag(name = "Публичные API", description = "API не требующие авторизации")
 class PublicController(
     private val userService: UserService
