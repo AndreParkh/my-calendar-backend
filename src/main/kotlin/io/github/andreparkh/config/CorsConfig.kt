@@ -16,7 +16,7 @@ class CorsConfig: WebMvcConfigurer {
             .maxAge(3600)
 
         registry.addMapping("/api/private/**")
-            .allowedOrigins("http://localhost:5003", "http://213.171.31.227:5003")
+            .allowedOrigins("http://localhost:5003", "http://213.171.31.227:5003", "http://213.171.31.227")
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("Content-Type", "Authorization")
             .allowCredentials(true)
