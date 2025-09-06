@@ -3,6 +3,18 @@ spring:
   jpa:
     show-sql: true
 
+yandex:
+  auth:
+    client-id: ${CLIENT_ID:default_client_id}
+    client-secret: ${CLIENT_SECRET:default_client_secret}
+    oauth-url: https://oauth.yandex.ru
+    login-url: https://login.yandex.ru
+    redirect-url: ${YANDEX_REDIRECT_URL:default_ya_redirect_url}
+
+frontend:
+  url: ${FRONTEND_URL:default_frontend_url}
+  auth-token: authToken
+
 springdoc:
   api-docs:
     enabled: true
@@ -15,7 +27,7 @@ springdoc:
 
 security:
   jwt:
-    secret-key: mySuperSecureSecretThatIsLongEnoughAndMeetsTheRequirementsOfTheHS512Algorithm!
+    secret-key: ${SECRET_KEY:default_secret_key}
     expiration-time: 86400000 #  24 часа
 
 server:
