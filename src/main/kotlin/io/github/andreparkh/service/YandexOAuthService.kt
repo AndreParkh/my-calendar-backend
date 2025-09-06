@@ -1,10 +1,11 @@
 package io.github.andreparkh.service
 
+import io.github.andreparkh.config.YandexOAuthErrorMessages
 import io.github.andreparkh.dto.auth.YandexTokenResponse
 import io.github.andreparkh.dto.auth.YandexUserInfo
-import io.github.cdimascio.dotenv.dotenv
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 
@@ -27,9 +28,6 @@ class YandexOAuthService (
 
     @Value("\${yandex.auth.redirect-url}")
     private lateinit var redirectUri: String
-
-    @Value("\${frontend.url}")
-    private lateinit var frontendUrl: String
 
     fun generateRedirectUri(): String {
         val baseUrl = "$oauthUrl/authorize"
@@ -57,11 +55,11 @@ class YandexOAuthService (
 
         val response = webClient.post()
             .uri(baseUrl)
-            .header(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .bodyValue(body)
             .retrieve()
             .bodyToMono(YandexTokenResponse::class.java)
-            .block() ?: throw RuntimeException("Не удалось получить access токен")
+            .block() ?: throw RuntimeException(YandexOAuthErrorMessages.NOT_RECEIVE_ACCESS_TOKEN)
         return response
     }
 
@@ -74,17 +72,17 @@ class YandexOAuthService (
             .header(HttpHeaders.AUTHORIZATION, "OAuth $accessToken")
             .retrieve()
             .bodyToMono(YandexUserInfo::class.java)
-            .block() ?: throw RuntimeException("Не удалось получить информацию о пользователе")
+            .block() ?: throw RuntimeException(YandexOAuthErrorMessages.NOT_RECEIVE_USER_INFO)
 
         return response
     }
 
-    fun login(code: String): String {
+    fun generateToken(code: String): String {
         val tokenResponse = getToken(code)
         val user = getUser(tokenResponse.accessToken)
         val token = jwtService.generateToken(user.defaultEmail)
-        val url = "$frontendUrl/auth/login?token=$token"
-        return url
+
+        return token
     }
 }
 

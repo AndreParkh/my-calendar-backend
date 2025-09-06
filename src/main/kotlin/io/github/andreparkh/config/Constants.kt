@@ -14,9 +14,6 @@ object AppRoles {
     const val USER_ROLE = "USER_ROLE"
     const val ADMIN_ROLE = "ADMIN_ROLE"
 }
-object HttpConstants {
-    const val APPLICATION_JSON = "application/json"
-}
 
 object EventParticipantStatus {
     const val ACCEPTED = "ACCEPTED"
@@ -38,8 +35,6 @@ object GroupErrorMessages {
     const val NOT_FOUND_BY_TOKEN = "Группа с таким токеном не найдена"
     const val TOKEN_INVALID = "Токен недействитен"
     const val USER_ALREADY_IN_GROUP = "Пользователь уже состоит в группе"
-
-
 }
 
 object EventErrorMessages {
@@ -47,6 +42,9 @@ object EventErrorMessages {
     const val ACCESS_DENIED = "Доступ запрещен"
     const val USER_ALREADY_PARTICIPANTS = "Пользователь уже участвует в событии"
     const val INVALID_STATUS = "Неккоректный статус: %s"
+}
 
-
+object YandexOAuthErrorMessages {
+    const val NOT_RECEIVE_ACCESS_TOKEN = "Не удалось получить access токен"
+    const val NOT_RECEIVE_USER_INFO = "Не удалось получить информацию о пользователе"
 }

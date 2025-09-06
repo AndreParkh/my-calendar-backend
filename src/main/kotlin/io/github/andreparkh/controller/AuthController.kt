@@ -1,20 +1,20 @@
 package io.github.andreparkh.controller
 
-import io.github.andreparkh.config.HttpConstants
 import io.github.andreparkh.dto.ErrorResponse
 import io.github.andreparkh.dto.auth.AuthResponse
 import io.github.andreparkh.dto.auth.LoginRequest
 import io.github.andreparkh.dto.auth.RegisterRequest
-import io.github.andreparkh.dto.auth.YandexUserInfo
 import io.github.andreparkh.service.AuthService
-import io.github.andreparkh.service.JwtService
 import io.github.andreparkh.service.YandexOAuthService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.AuthenticationException
@@ -28,8 +28,13 @@ import java.net.URI
 class AuthController(
     private val authService: AuthService,
     private val yandexOAuthService: YandexOAuthService,
-    private val jwtService: JwtService
 ) {
+
+    @Value("\${frontend.url}")
+    private lateinit var frontendUrl: String
+
+    @Value("\${frontend.auth-token}")
+    private lateinit var authToken: String
 
     @PostMapping("/register")
     @Operation(
@@ -37,10 +42,10 @@ class AuthController(
         description = "Создание нового пользователя в системе",
         responses = [
             ApiResponse(responseCode = "200", description = "Пользователь успешно создан", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = AuthResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = AuthResponse::class))
             ]),
             ApiResponse(responseCode = "400", description = "Пользователь с таким email уже существует", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = ErrorResponse::class))
             ]),
         ]
     )
@@ -58,7 +63,7 @@ class AuthController(
         description = "Возращает токен при успешной аутентификации",
         responses = [
             ApiResponse(responseCode = "200", description = "Успешная аутентификация. Возвращается токен доступа", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = AuthResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = AuthResponse::class))
             ]),
             ApiResponse(responseCode = "400", description = "Неверные учетные данные", content = [
                 Content(schema = Schema())
@@ -77,41 +82,61 @@ class AuthController(
         }
     }
 
-
     @GetMapping("/yandex")
     @Operation(
-        summary = "Аутентификация яндекса",
-        description = "Редиректит пользователя аутентификацию яндекса",
+        summary = "Инициировать аутентификацию через Яндекс OAuth",
+        description = "Перенаправляет пользователя на страницу авторизации Яндекса для получения кода авторизации",
         responses = [
-            ApiResponse(responseCode = "200", description = "Успешная аутентификация", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = RedirectView::class))
+            ApiResponse(responseCode = "302", description = "Перенаправление на страницу авторизации Яндекса", content = [
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = RedirectView::class))
             ]),
+            ApiResponse(
+                responseCode = "500", description = "Ошибка при генерации URL перенаправления"
+            )
         ]
     )
-    fun yandexOAuthGetCode(): RedirectView {
+    fun getCodeFromYandexOAuth(): RedirectView {
         return RedirectView(yandexOAuthService.generateRedirectUri())
     }
 
     @GetMapping("/yandex/callback")
     @Operation(
-        summary = "",
-        description = "",
+        summary = "Обработка колбэка от Яндекс OAuth",
+        description = "Принимает временный код авторизации от Яндекса, обменивает его на access token, " +
+                "устанавливает куку с токеном аутентификации и перенаправляет пользователя на фронтенд",
+        parameters = [
+            Parameter(
+                name = "code",
+                description = "Временный код авторизации, выданный Яндексом после подтверждения пользователем доступа",
+                required = true,
+                `in` = ParameterIn.QUERY
+            )
+        ],
         responses = [
-            ApiResponse(responseCode = "200", description = "Успешная аутентификация", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = YandexUserInfo::class))
+            ApiResponse(
+                responseCode = "302",
+                description = "Успешная аутентификация. Пользователь перенаправлен на фронтенд с установленной кукой аутентификации", content = [
             ]),
+            ApiResponse(
+                responseCode = "400",
+                description = "Отсутствует параметр 'code' или он недействителен"
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Не удалось обменять код на токен (ошибка аутентификации у Яндекса)"
+            ),
+            ApiResponse(
+                responseCode = "500",
+                description = "Внутренняя ошибка сервера при обработке токена"
+            )
         ]
     )
-    fun yandexOAuthGetData(
+    fun getInfoFromYandexOAuth(
         @RequestParam("code") code: String
     ): ResponseEntity<Unit> {
-
-        val tokenResponse = yandexOAuthService.getToken(code)
-        val user = yandexOAuthService.getUser(tokenResponse.accessToken)
-        val token = jwtService.generateToken(user.defaultEmail)
-        val url = "http://localhost:5003/user"
-
-        val cookie = ResponseCookie.from("authToken", token)
+        val token = yandexOAuthService.generateToken(code)
+        val url = "$frontendUrl/user"
+        val cookie = ResponseCookie.from(authToken, token)
             .path("/")
             .build()
 
