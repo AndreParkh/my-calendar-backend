@@ -1,6 +1,5 @@
 package io.github.andreparkh.controller
 
-import io.github.andreparkh.config.HttpConstants
 import io.github.andreparkh.dto.ErrorResponse
 import io.github.andreparkh.dto.user.ChangeRoleRequest
 import io.github.andreparkh.dto.user.UserResponse
@@ -12,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -29,10 +29,10 @@ class UserController (
         description = "Возвращает пользователя по его уникальному ID",
         responses = [
             ApiResponse(responseCode = "200", description = "Пользователь найден", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = UserResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = UserResponse::class))
             ]),
             ApiResponse(responseCode = "401", description = "Пользователь не авторизован", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = ErrorResponse::class))
             ]),
             ApiResponse(responseCode = "404", description = "Пользователь не найден", content = [
                 Content(schema = Schema())
@@ -53,7 +53,7 @@ class UserController (
         description = "Возвращает список всех зарегистрированных пользователей",
         responses = [
             ApiResponse(responseCode = "200", description = "Список пользователей успешно получен", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = Array<UserResponse>::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = Array<UserResponse>::class))
             ]),
             ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
                 Content(schema = Schema())
@@ -70,13 +70,13 @@ class UserController (
         description = "Позволяет пользователю обновить личные данные",
         responses = [
             ApiResponse(responseCode = "200", description = "Данные пользователя успешно обновлены", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = UserResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = UserResponse::class))
             ]),
             ApiResponse(responseCode = "400", description = "Некорректные данные запроса или поля имеют недопустимые значения", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = ErrorResponse::class))
             ]),
             ApiResponse(responseCode = "401", description = "Пользователь не авторизован", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = ErrorResponse::class))
             ]),
             ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
                 Content(schema = Schema())
@@ -96,7 +96,7 @@ class UserController (
             description = "JSON-объект с данными для обновления пользователя",
             required = true,
             content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = UpdateUser::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = UpdateUser::class))
             ]
         )
         updateUser: UpdateUser

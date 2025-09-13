@@ -1,6 +1,5 @@
 package io.github.andreparkh.controller
 
-import io.github.andreparkh.config.HttpConstants
 import io.github.andreparkh.dto.ErrorResponse
 import io.github.andreparkh.dto.group.*
 import io.github.andreparkh.service.GroupService
@@ -10,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
@@ -26,7 +26,7 @@ class GroupController (
         description = "Позволяет пользователю создать новую групп. Возвращается созданная группа с уникальным ID",
         responses = [
             ApiResponse(responseCode = "201", description = "Группа успешно создана", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = GroupResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = GroupResponse::class))
             ]),
             ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
                 Content(schema = Schema())
@@ -48,7 +48,7 @@ class GroupController (
         description = "Возвращает информацию о группе по ее уникальному ID",
         responses = [
             ApiResponse(responseCode = "200", description = "Информация о группе", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = GroupResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = GroupResponse::class))
             ]),
             ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
                 Content(schema = Schema())
@@ -73,10 +73,10 @@ class GroupController (
         description = "Позволяет пользователю присоединиться к группе по пригласительному токену",
         responses = [
             ApiResponse(responseCode = "200", description = "Успешное присоединение к группе", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = GroupResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = GroupResponse::class))
             ]),
             ApiResponse(responseCode = "400", description = "Неверный токен или пользователь уже состоит в группе", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = ErrorResponse::class))
             ]),
             ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
                 Content(schema = Schema())
@@ -101,7 +101,7 @@ class GroupController (
         description = "Возвращает список всех участников указанной группы",
         responses = [
             ApiResponse(responseCode = "200", description = "Список участников группы", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = Array<GroupMemberResponse>::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = Array<GroupMemberResponse>::class))
             ]),
             ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
                 Content(schema = Schema())

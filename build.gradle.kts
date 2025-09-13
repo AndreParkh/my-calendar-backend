@@ -18,6 +18,7 @@ dependencies {
     // Spring Boot dependencies
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -54,9 +55,3 @@ tasks.test {
 kotlin {
     jvmToolchain(23)
 }
-
-//tasks.jar.configure {
-//    manifest {
-//        attributes(mapOf("Main-Class" to "io.github.andreparkh.MainKt"))
-//    }
-//}

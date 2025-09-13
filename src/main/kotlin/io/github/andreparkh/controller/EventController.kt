@@ -1,6 +1,5 @@
 package io.github.andreparkh.controller
 
-import io.github.andreparkh.config.HttpConstants
 import io.github.andreparkh.dto.ErrorResponse
 import io.github.andreparkh.dto.event.*
 import io.github.andreparkh.service.EventService
@@ -10,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
@@ -26,7 +26,7 @@ class EventController(
         description = "Позволяет пользователю создать новое событие. Возвращается созданное событие с уникальным ID",
         responses = [
             ApiResponse(responseCode = "201", description = "Событие успешно создано", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = EventResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = EventResponse::class))
             ]),
             ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
                 Content(schema = Schema())
@@ -49,7 +49,7 @@ class EventController(
         description = "Возвращает информацию о событии, по его уникальному ID",
         responses = [
             ApiResponse(responseCode = "200", description = "Информация о событии", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = EventResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = EventResponse::class))
             ]),
             ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
                 Content(schema = Schema(implementation = ErrorResponse::class))
@@ -75,7 +75,7 @@ class EventController(
         description = "Возвращает список участников указанного события",
         responses = [
             ApiResponse(responseCode = "200", description = "Список участников события", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = Array<ParticipantResponse>::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = Array<ParticipantResponse>::class))
             ]),
             ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
                 Content(schema = Schema())
@@ -101,10 +101,10 @@ class EventController(
         description = "Позволяет пригласить пользователя в событие",
         responses = [
             ApiResponse(responseCode = "200", description = "Приглашение отправлено", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = Array<ParticipantResponse>::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = Array<ParticipantResponse>::class))
             ]),
             ApiResponse(responseCode = "400", description = "Некорректные данные", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = ErrorResponse::class))
             ]),
             ApiResponse(responseCode = "404", description = "Событие или пользователь не найдены", content = [
                 Content(schema = Schema())
@@ -131,10 +131,10 @@ class EventController(
         description = "Позволяет пользователю принять или отклонить участие в событии",
         responses = [
             ApiResponse(responseCode = "200", description = "Статус участника успешно обновлен", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ParticipantResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = ParticipantResponse::class))
             ]),
             ApiResponse(responseCode = "400", description = "Некорректный статус или пользователь не состоит в событии", content = [
-                Content(mediaType = HttpConstants.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class))
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = ErrorResponse::class))
             ]),
             ApiResponse(responseCode = "404", description = "Событие или пользователь не найдены", content = [
                 Content(schema = Schema())
