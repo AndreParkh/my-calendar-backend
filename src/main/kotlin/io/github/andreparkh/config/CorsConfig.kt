@@ -13,10 +13,10 @@ class CorsConfig: WebMvcConfigurer {
 
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/api/auth/**")
-            .allowedOrigins("*")
+            .allowedOrigins(frontendUrl)
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-            .allowedHeaders("*")
-            .allowCredentials(false)
+            .allowedHeaders("Content-Type", "Authorization")
+            .allowCredentials(true)
             .maxAge(3600)
 
         registry.addMapping("/api/public/**")
@@ -27,7 +27,7 @@ class CorsConfig: WebMvcConfigurer {
             .maxAge(3600)
 
         registry.addMapping("/api/private/**")
-            .allowedOrigins(frontendUrl, "http://213.171.31.227")
+            .allowedOrigins(frontendUrl)
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("Content-Type", "Authorization")
             .allowCredentials(true)
