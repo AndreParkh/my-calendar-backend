@@ -14,19 +14,19 @@ class YandexOAuthService (
     private val webClient: WebClient,
     private val jwtService: JwtService
 ) {
-    @Value("\${yandex.auth.client-id}")
+    @Value("\${yandex.auth.client.id}")
     private lateinit var clientId: String
 
-    @Value("\${yandex.auth.client-secret}")
+    @Value("\${yandex.auth.client.secret}")
     private lateinit var clientSecret: String
 
-    @Value("\${yandex.auth.oauth-url}")
+    @Value("\${yandex.auth.url.oauth}")
     private lateinit var oauthUrl: String
 
-    @Value("\${yandex.auth.login-url}")
+    @Value("\${yandex.auth.url.login}")
     private lateinit var loginUrl: String
 
-    @Value("\${yandex.auth.redirect-url}")
+    @Value("\${yandex.auth.url.redirect}")
     private lateinit var redirectUri: String
 
     fun generateRedirectUri(): String {
