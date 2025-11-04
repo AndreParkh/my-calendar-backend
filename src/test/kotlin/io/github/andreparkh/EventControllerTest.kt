@@ -38,8 +38,16 @@ class EventControllerTest {
         title = "Team Meeting",
         description = "Weekly team sync",
         startTime = LocalDateTime.now().plusDays(1),
+        endTime = LocalDateTime.now().plusHours(1)
+    )
+
+    val eventRequest2 = EventRequest(
+        title = "Team Meeting",
+        description = "Weekly team sync",
+        startTime = LocalDateTime.now().plusDays(1),
         endTime = LocalDateTime.now().plusDays(1).plusHours(1)
     )
+
     private var token1: String? = null
     private var token2: String? = null
     private var userId1: Long? = null
@@ -291,6 +299,41 @@ class EventControllerTest {
                 .content(objectMapper.writeValueAsString(updateStatusRequest))
         )
             .andExpect(status().isBadRequest)
+    }
+
+
+    @Test
+    fun `should get event by participants and date `() {
+
+        val createdEvent1 = createEvent(token1!!, eventRequest)
+            .andExpect(status().isCreated)
+            .andReturn()
+
+        val createdEvent2 = createEvent(token1!!, eventRequest2)
+            .andExpect(status().isCreated)
+            .andReturn()
+
+        val eventId1 = objectMapper
+            .readTree(createdEvent1.response.contentAsString)
+            .get("id")
+            .asLong()
+
+        val eventId2 = objectMapper
+            .readTree(createdEvent2.response.contentAsString)
+            .get("id")
+            .asLong()
+
+        mockMvc.perform(
+            get("/api/private/events/date-between")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token1")
+                .param("start", LocalDateTime.now().minusDays(1).toString())
+                .param("end", LocalDateTime.now().plusDays(2).toString())
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].id").value(eventId1))
+            .andExpect(jsonPath("$[1].id").value(eventId2))
     }
 
 
