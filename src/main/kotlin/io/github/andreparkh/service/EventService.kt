@@ -68,7 +68,7 @@ class EventService(
         val currentUser = userService.getCurrentUser()
         val events = eventRepository.findEventByParticipantsAndDate(currentUser, start, end)
 
-        return events.map { event -> event.toEventResponse() }
+        return events.map { it.toEventResponse() }
     }
 
     fun getAllParticipantsByEventId(eventId: Long): List<ParticipantResponse> {
