@@ -15,10 +15,14 @@ interface EventRepository: JpaRepository<Event, Long> {
         """
         SELECT DISTINCT e
         FROM Event e
-        JOIN EventParticipant ep ON e.id = ep.event.id
-        WHERE ep.user = :user
-            AND e.startTime >= :start
-            AND e.startTime < :end
+        LEFT JOIN FETCH e.participants
+        WHERE e.id IN (
+            SELECT DISTINCT ep.event.id
+            FROM EventParticipant ep
+            WHERE ep.user = :user
+                AND ep.event.startTime >= :start
+                AND ep.event.startTime < :end
+        )
         """
     )
     fun findEventByParticipantsAndDate(
@@ -26,5 +30,4 @@ interface EventRepository: JpaRepository<Event, Long> {
         @Param("start") start: LocalDateTime,
         @Param("end") end: LocalDateTime,
     ): List<Event>
-
 }

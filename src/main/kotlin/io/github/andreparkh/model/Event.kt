@@ -37,7 +37,12 @@ data class Event(
     var repeatRule: String = "",
 
     @Column(nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now()
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+
+    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    val participants: MutableList<EventParticipant> = mutableListOf()
+
 ) {
     fun getId(): Long {
         require(this.id != null) { "Event ID must not be null" }
@@ -50,9 +55,10 @@ data class Event(
         description = this.description,
         startTime = this.startTime,
         endTime = this.endTime,
-        createdById = this.createdBy.getId(),
+        createdBy = this.createdBy.getShortInfo(),
         isRepeating = this.isRepeatable,
         repeatRule = this.repeatRule,
-        createdAt = this. createdAt
+        createdAt = this. createdAt,
+        participants = participants.map { participant -> participant.user.getShortInfo() }
     )
 }

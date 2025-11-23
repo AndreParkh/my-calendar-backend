@@ -42,6 +42,7 @@ class EventService(
             event = event,
             user = currentUser,
         )
+        event.participants.add(participant)
 
         val savedEvent = eventRepository.save(event)
         participantRepository.save(participant)
