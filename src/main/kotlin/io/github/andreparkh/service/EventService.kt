@@ -15,6 +15,7 @@ import io.github.andreparkh.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class EventService(
@@ -41,6 +42,7 @@ class EventService(
             event = event,
             user = currentUser,
         )
+        event.participants.add(participant)
 
         val savedEvent = eventRepository.save(event)
         participantRepository.save(participant)
@@ -59,6 +61,14 @@ class EventService(
             throw AccessDeniedException(EventErrorMessages.ACCESS_DENIED)
 
         return event.toEventResponse()
+    }
+
+    fun getEventsDateBetween(start: LocalDateTime, end: LocalDateTime): List<EventResponse> {
+
+        val currentUser = userService.getCurrentUser()
+        val events = eventRepository.findEventByParticipantsAndDate(currentUser, start, end)
+
+        return events.map { it.toEventResponse() }
     }
 
     fun getAllParticipantsByEventId(eventId: Long): List<ParticipantResponse> {

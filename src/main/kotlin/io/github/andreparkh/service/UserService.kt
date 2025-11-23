@@ -30,6 +30,7 @@ class UserService(
             lastName =  request.lastName,
             email = request.email,
             passwordHash = passwordEncoder.encode(request.password),
+            avatarUrl = getDefaultAvatarUrl(request.firstName, request.lastName)
         )
 
         val savedUser = userRepository.save(user)
@@ -113,6 +114,10 @@ class UserService(
             workStartTime = LocalTime.of(9,0),
             workEndTime = LocalTime.of(18 ,0),
         )
+    }
+
+    fun getDefaultAvatarUrl(firstName: String, lastName: String): String {
+        return "https://avatar.iran.liara.run/username?username=$firstName+$lastName"
     }
 
     fun getCurrentUser(): User {

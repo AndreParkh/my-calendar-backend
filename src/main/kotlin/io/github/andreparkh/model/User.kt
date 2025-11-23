@@ -1,6 +1,7 @@
 package io.github.andreparkh.model
 
 import io.github.andreparkh.config.AppRoles
+import io.github.andreparkh.dto.user.ShortUserInfo
 import io.github.andreparkh.dto.user.UserResponse
 import jakarta.persistence.*
 import java.time.LocalDate
@@ -75,5 +76,12 @@ data class User (
         vacationEnd = this.vacationEnd,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
+    )
+
+    fun getShortInfo() =  ShortUserInfo(
+        id = this.getId(),
+        firstName = this.firstName,
+        lastName = this.lastName,
+        avatarUrl = this.avatarUrl
     )
 }

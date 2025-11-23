@@ -13,6 +13,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
+import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/api/private/events")
@@ -152,6 +153,29 @@ class EventController(
     ): ResponseEntity<ParticipantResponse> {
         val updatedParticipant = eventService.updateParticipationStatus(eventId, request)
         return ResponseEntity.ok(updatedParticipant)
+    }
+
+    @GetMapping("/date-between")
+    @Operation(
+        summary = "Получение событий за заданный временной промежуток",
+        description = "Возвращает события, за заданный промежуток времени",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Перечень событий", content = [
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = Array<EventResponse>::class))
+            ]),
+            ApiResponse(responseCode = "403", description = "Доступ запрещен", content = [
+                Content(schema = Schema(implementation = ErrorResponse::class))
+            ]),
+        ]
+    )
+    fun findEventsDateBetween(
+        @Parameter(description = "Начало временного интервала", example = "2025-11-03T00:00:00")
+        @RequestParam start: LocalDateTime,
+        @Parameter(description = "Конец временного интервала", example = "2025-11-04T00:00:00")
+        @RequestParam end: LocalDateTime,
+    ): ResponseEntity<List<EventResponse>> {
+        val events = eventService.getEventsDateBetween(start, end)
+        return ResponseEntity.ok(events)
     }
 
 }

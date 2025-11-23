@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.cors.CorsUtils
 
 @Configuration
 @EnableWebSecurity
@@ -24,6 +25,7 @@ class SecurityConfig(
             .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter::class.java)
             .authorizeHttpRequests {
                 it
+                    .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
                     .permitAll()
                     .requestMatchers("/api/auth/**")
@@ -43,4 +45,7 @@ class SecurityConfig(
 
     @Bean
     fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager = config.authenticationManager
+
+
+
 }

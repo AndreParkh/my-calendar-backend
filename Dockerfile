@@ -1,5 +1,5 @@
 # Используем базовый образ с JDK
-FROM openjdk:23-jdk-slim
+FROM openjdk:23-ea-23-jdk-slim
 
 # Устанавливаем рабочую директорию внутри контейнера
 WORKDIR /app

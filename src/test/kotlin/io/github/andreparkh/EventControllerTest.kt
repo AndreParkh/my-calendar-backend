@@ -34,12 +34,20 @@ class EventControllerTest {
     val registerRequest1 = RegisterRequest(firstName = "John", lastName = "Doe", email = "john@example.com", password = "password")
     val registerRequest2 = RegisterRequest(firstName = "Jane", lastName = "Doe", email = "jane@example.com", password = "password")
 
-    val eventRequest = EventRequest(
+    val eventRequest1 = EventRequest(
+        title = "Team Meeting",
+        description = "Weekly team sync",
+        startTime = LocalDateTime.now(),
+        endTime = LocalDateTime.now().plusHours(1)
+    )
+
+    val eventRequest2 = EventRequest(
         title = "Team Meeting",
         description = "Weekly team sync",
         startTime = LocalDateTime.now().plusDays(1),
         endTime = LocalDateTime.now().plusDays(1).plusHours(1)
     )
+
     private var token1: String? = null
     private var token2: String? = null
     private var userId1: Long? = null
@@ -68,22 +76,22 @@ class EventControllerTest {
 
     @Test
     fun `should create event`() {
-        createEvent(token1!!, eventRequest)
+        createEvent(token1!!, eventRequest1)
             .andExpect(status().isCreated)
-            .andExpect(jsonPath("$.title").value(eventRequest.title))
-            .andExpect(jsonPath("$.description").value(eventRequest.description))
+            .andExpect(jsonPath("$.title").value(eventRequest1.title))
+            .andExpect(jsonPath("$.description").value(eventRequest1.description))
     }
 
     @Test
     fun `should return forbidden when creating event with invalid token`() {
-        createEvent("InvalidToken", eventRequest)
+        createEvent("InvalidToken", eventRequest1)
             .andExpect(status().isForbidden)
     }
 
     @Test
     fun `should get event by ID`() {
 
-        val createdEvent = createEvent(token1!!, eventRequest)
+        val createdEvent = createEvent(token1!!, eventRequest1)
             .andExpect(status().isCreated)
             .andReturn()
 
@@ -99,13 +107,13 @@ class EventControllerTest {
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.id").value(eventId))
-            .andExpect(jsonPath("$.title").value(eventRequest.title))
+            .andExpect(jsonPath("$.title").value(eventRequest1.title))
     }
 
     @Test
     fun `should return forbidden when trying to get event by another user`() {
 
-        val createdEvent = createEvent(token1!!, eventRequest)
+        val createdEvent = createEvent(token1!!, eventRequest1)
             .andExpect(status().isCreated)
             .andReturn()
 
@@ -125,7 +133,7 @@ class EventControllerTest {
     @Test
     fun `should return not found when trying to get event by non-exiting ID`() {
 
-        val createdEvent = createEvent(token1!!, eventRequest)
+        val createdEvent = createEvent(token1!!, eventRequest1)
             .andExpect(status().isCreated)
             .andReturn()
 
@@ -144,7 +152,7 @@ class EventControllerTest {
 
     @Test
     fun `should join event`() {
-        val createdEvent = createEvent(token1!!, eventRequest)
+        val createdEvent = createEvent(token1!!, eventRequest1)
             .andExpect(status().isCreated)
             .andReturn()
 
@@ -177,7 +185,7 @@ class EventControllerTest {
 
     @Test
     fun `should return bad request when trying to join own event`() {
-        val createdEvent = createEvent(token1!!, eventRequest)
+        val createdEvent = createEvent(token1!!, eventRequest1)
             .andExpect(status().isCreated)
             .andReturn()
 
@@ -207,7 +215,7 @@ class EventControllerTest {
 
     @Test
     fun `should update status`() {
-        val createdEvent = createEvent(token1!!, eventRequest)
+        val createdEvent = createEvent(token1!!, eventRequest1)
             .andExpect(status().isCreated)
             .andReturn()
 
@@ -252,7 +260,7 @@ class EventControllerTest {
 
     @Test
     fun `should return bad request when updating status with invalid status`() {
-        val createdEvent = createEvent(token1!!, eventRequest)
+        val createdEvent = createEvent(token1!!, eventRequest1)
             .andExpect(status().isCreated)
             .andReturn()
 
@@ -291,6 +299,41 @@ class EventControllerTest {
                 .content(objectMapper.writeValueAsString(updateStatusRequest))
         )
             .andExpect(status().isBadRequest)
+    }
+
+
+    @Test
+    fun `should get event by participants and date `() {
+
+        val createdEvent1 = createEvent(token1!!, eventRequest1)
+            .andExpect(status().isCreated)
+            .andReturn()
+
+        val createdEvent2 = createEvent(token1!!, eventRequest2)
+            .andExpect(status().isCreated)
+            .andReturn()
+
+        val eventId1 = objectMapper
+            .readTree(createdEvent1.response.contentAsString)
+            .get("id")
+            .asLong()
+
+        val eventId2 = objectMapper
+            .readTree(createdEvent2.response.contentAsString)
+            .get("id")
+            .asLong()
+
+        mockMvc.perform(
+            get("/api/private/events/date-between")
+                .header(JwtConstants.AUTHORIZATION_HEADER, "${JwtConstants.TYPE_TOKEN} $token1")
+                .param("start", LocalDateTime.now().minusDays(1).toString())
+                .param("end", LocalDateTime.now().plusDays(2).toString())
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].id").value(eventId1))
+            .andExpect(jsonPath("$[1].id").value(eventId2))
     }
 
 

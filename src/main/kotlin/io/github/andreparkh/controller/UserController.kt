@@ -47,6 +47,26 @@ class UserController (
             return ResponseEntity.ok(userService.getUserById(id))
     }
 
+    @GetMapping("/me")
+    @Operation(
+        summary = "Получение текущего авторизованного пользователя",
+        description = "Возвращает пользователя исходя из токена",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Пользователь найден", content = [
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = UserResponse::class))
+            ]),
+            ApiResponse(responseCode = "401", description = "Пользователь не авторизован", content = [
+                Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = ErrorResponse::class))
+            ]),
+            ApiResponse(responseCode = "404", description = "Пользователь не найден", content = [
+                Content(schema = Schema())
+            ])
+        ]
+    )
+    fun getCurrentUser(): ResponseEntity<UserResponse> {
+        return ResponseEntity.ok(userService.getCurrentUser().toUserResponse())
+    }
+
     @GetMapping()
     @Operation(
         summary = "Получение всех пользователей",
