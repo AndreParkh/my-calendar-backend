@@ -81,7 +81,7 @@ class YandexOAuthController(
         @RequestParam("code") code: String
     ): ResponseEntity<Unit> {
         val token = yandexOAuthService.generateToken(code)
-        val redirectUrl = "$frontendUrl/user"
+        val redirectUrl = "$frontendUrl/dashboard"
 
         return redirectResponseBuilder.buildRedirectWithCookie(token, redirectUrl)
     }
